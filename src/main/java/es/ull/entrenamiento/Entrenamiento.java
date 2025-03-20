@@ -40,6 +40,7 @@ public class Entrenamiento {
 		Dataset testset = new Dataset(datos.getAtributosEmpty());
 		clases = datos.getClases();
 		ArrayList<Integer> indices = new ArrayList<>();
+		// Using Random is safe here because it's only used for dataset splitting, not for security-sensitive tasks.
 		Random random = new Random(semilla);
 		while(indices.size() < datos.NumeroCasos()*porcentaje) {
 			int randomNumber = random.nextInt(datos.NumeroCasos());
