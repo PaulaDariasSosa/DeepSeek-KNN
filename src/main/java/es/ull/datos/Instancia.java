@@ -37,7 +37,7 @@ public class Instancia {
 			 if (valores.get(i) instanceof Double) {
 				 aux.add((Double) valores.get(i));
 	         } else if (valores.get(i) instanceof Integer) {
-	             aux.add((double) (int) valores.get(i));
+	             aux.add((int) valores.get(i));
 	         }
 		}
 		return aux;

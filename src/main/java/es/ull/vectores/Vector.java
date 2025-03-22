@@ -87,8 +87,8 @@ public class Vector {
      * Método para clonar un vector
      * @return la copia del vector original
      */
-    public Vector clone() {
-        return new Vector(new ArrayList<Double> (this.coef));
+    public Vector copiar() {
+        return new Vector(this.coef);
     }
     
     /**
@@ -279,7 +279,7 @@ public class Vector {
         }
     }
     
-    public ArrayList<Double> getValores() {
+    public List<Double> getValores() {
         return this.coef;
     }
 }

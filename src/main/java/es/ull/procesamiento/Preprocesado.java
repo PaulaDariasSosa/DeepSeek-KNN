@@ -6,5 +6,5 @@ import datos.Dataset;
 
 public interface Preprocesado {
 	
-	public List<Atributo> Procesar(Dataset datos);
+	public List<Atributo> procesar(Dataset datos);
 }

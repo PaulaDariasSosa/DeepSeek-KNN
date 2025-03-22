@@ -7,6 +7,9 @@ import java.util.*;
 
 import clasificacion.KNN;
 import datos.*;
+import knnproject.KnnTfg;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vectores.Matriz;
 
 public class Entrenamiento {
@@ -72,7 +75,8 @@ public class Entrenamiento {
 			String clase = (new KNN(valorK).clasificar(train, nueva));
 			if (clase.equals(test.getInstance(i).getClase())) aciertos += 1;
 		}
-		System.out.println("La precisión predictiva: " + aciertos + " / " + test.NumeroCasos() +" = "+ (aciertos/test.NumeroCasos())*100 + "%");
+		Logger logger = LoggerFactory.getLogger(Entrenamiento.class);
+		logger.info("La precisión predictiva: " + aciertos + " / " + test.NumeroCasos() +" = "+ (aciertos/test.NumeroCasos())*100 + "%");
 		
 	}
 	
@@ -88,7 +92,8 @@ public class Entrenamiento {
 			String clase = (new KNN(valorK).clasificar(train, nueva));
 			confusion.set( clases.indexOf(test.getInstance(i).getClase()),clases.indexOf(clase),confusion.get(clases.indexOf(test.getInstance(i).getClase()),clases.indexOf(clase))+1);
 		}
-		System.out.println(clases);
+		Logger logger = LoggerFactory.getLogger(Entrenamiento.class);
+		logger.info(String.valueOf(clases));
 		confusion.print();
 	}
 	

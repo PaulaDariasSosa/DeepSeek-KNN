@@ -24,7 +24,7 @@ public class Matriz {
         this.numCols = n;
         matrix = new ArrayList<Vector>(m);
         for (int i = 0; i < m; i++) {
-            matrix.add(i, (new Vector(n)));;
+            matrix.add(i, (new Vector(n)));
         }
         isTransposed = false;
     }
@@ -69,12 +69,12 @@ public class Matriz {
         }
     }
     
-    public static Matriz multiply(Matriz A, Matriz B) {
-        if (A.getNumCols() != B.getNumRows())  throw new IllegalArgumentException("Número de columnas de A no coincide con el número de filas de B");
-        Matriz result = new Matriz(A.getNumRows(), B.getNumCols());
-        for (int i = 0; i < A.getNumRows(); i++) {
-            for (int j = 0; j < B.getNumCols(); j++) {
-                double value = A.matrix.get(i).productoEscalar(getColumn(B.matrix, j));
+    public static Matriz multiply(Matriz a, Matriz b) {
+        if (a.getNumCols() != b.getNumRows())  throw new IllegalArgumentException("Número de columnas de A no coincide con el número de filas de B");
+        Matriz result = new Matriz(a.getNumRows(), b.getNumCols());
+        for (int i = 0; i < a.getNumRows(); i++) {
+            for (int j = 0; j < b.getNumCols(); j++) {
+                double value = a.matrix.get(i).productoEscalar(getColumn(b.matrix, j));
                 Vector aux = result.matrix.get(i);
                 aux.set(j, value);
                 result.matrix.set(i, aux);
@@ -92,7 +92,7 @@ public class Matriz {
         return column;
     }
     
-    public Matriz read(String filename) throws FileNotFoundException, IOException {
+    public Matriz read(String filename) throws IOException {
     	try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             int m = Integer.parseInt(reader.readLine());
             int n = Integer.parseInt(reader.readLine());
@@ -130,7 +130,7 @@ public class Matriz {
             return false;
         }
         for (int i = 0; i < numRows; i++) {
-            if (this.matrix.get(i).equals(other.matrix.get(i)) == false) {
+            if (!this.matrix.get(i).equals(other.matrix.get(i))) {
                 return false;
             }
         }
@@ -167,15 +167,15 @@ public class Matriz {
     	this.deleteRows(indice);
     }
     
-    public void addRows(Vector valores) {
+    public void addRows() {
     	this.numRows += 1;
     }
     
-    public void addCols(Vector valores) {
+    public void addCols() {
     	this.numCols += 1;
     }
     
-    public List<Vector> Normalizar(){
+    public List<Vector> normalizar(){
     	this.transpose();
     	List<Vector> nueva = this.matrix;
     	for (Vector fila: nueva) fila.normalize();

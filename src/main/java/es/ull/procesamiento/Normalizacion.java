@@ -8,7 +8,7 @@ import vectores.Vector;
 
 public class Normalizacion implements Preprocesado{
 	
-	public List<Atributo> Procesar(Dataset datos) {
+	public List<Atributo> procesar(Dataset datos) {
 		List<Atributo> nuevos = new ArrayList<Atributo>(datos.getAtributos());
 		Cuantitativo ejemplo = new Cuantitativo();
 		for (int i = 0; i < nuevos.size(); i++) {

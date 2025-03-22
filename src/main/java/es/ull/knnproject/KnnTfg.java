@@ -75,7 +75,7 @@ public class KnnTfg  {
 					Preprocesado intento1 = new Normalizacion();
 					if (datos.getPreprocesado() == 2) intento1 = new Normalizacion();
 					if (datos.getPreprocesado() == 3) intento1 = new Estandarizacion();
-					copiaCrudos = new Dataset (intento1.Procesar(copiaCrudos));
+					copiaCrudos = new Dataset (intento1.procesar(copiaCrudos));
 					instance = copiaCrudos.getInstance(copiaCrudos.NumeroCasos()-1);
 					copiaCrudos.delete(copiaCrudos.NumeroCasos()-1);
 					instance.deleteClase();
@@ -189,17 +189,17 @@ public class KnnTfg  {
 			return data;
 		case(2):
 			Normalizacion intento1 = new Normalizacion();
-			data = new Dataset (intento1.Procesar(data));
+			data = new Dataset (intento1.procesar(data));
 			data.setPreprocesado(2);
 			break;
 		case(3):
 			Estandarizacion intento2 = new Estandarizacion();
-			data = new Dataset (intento2.Procesar(data));
+			data = new Dataset (intento2.procesar(data));
 			data.setPreprocesado(3);
 			break;
 		default:
 			intento1 = new Normalizacion();
-			data = new Dataset (intento1.Procesar(data));
+			data = new Dataset (intento1.procesar(data));
 			data.setPreprocesado(2);
 		}
 		return data;
