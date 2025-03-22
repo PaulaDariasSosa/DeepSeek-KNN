@@ -2,17 +2,18 @@ package datos;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import vectores.Vector;
 
 public class Instancia {
-	private ArrayList<Object> valores;
+	private List<Object> valores;
 	
 	public Instancia(){
 		this.valores = new ArrayList<Object>();
 	}
 	
-	public Instancia(ArrayList<Object> nuevos){
+	public Instancia(List<Object> nuevos){
 		this.valores = nuevos;
 	}
 	
@@ -22,7 +23,7 @@ public class Instancia {
 		this.valores = arrayList;
 	}
 	
-	public ArrayList<Object> getValores() {
+	public List<Object> getValores() {
 		return this.valores;
 	}
 	

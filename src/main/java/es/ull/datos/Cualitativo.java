@@ -22,7 +22,7 @@ public class Cualitativo extends Atributo{
 		valores.add(valor);
 	}
 	
-	public Cualitativo(String name, ArrayList<String> valor) {
+	public Cualitativo(String name, List<String> valor) {
 		this();
 		this.nombre = name;
 		this.valores = valor;

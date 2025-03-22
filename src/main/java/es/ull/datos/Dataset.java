@@ -91,7 +91,7 @@ public class Dataset {
 		}	
 	}
 	
-	public void add(ArrayList<String> nueva) {
+	public void add(List<String> nueva) {
 		for (int i = 0; i < atributos.size(); ++i) {
 			Atributo aux =  atributos.get(i);
 			try {

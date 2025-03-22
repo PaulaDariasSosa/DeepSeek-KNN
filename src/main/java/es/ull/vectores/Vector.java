@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Vector {
@@ -34,7 +35,7 @@ public class Vector {
      * Constructor que recibe un ArrayList de double
      * @param coef
      */
-    public Vector(ArrayList<Double> coef) {
+    public Vector(List<Double> coef) {
     	this.coef = new ArrayList<>(coef);
     }
     

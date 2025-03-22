@@ -2,9 +2,10 @@ package vectores;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Matriz {
-    private ArrayList<Vector> matrix;
+    private List<Vector> matrix;
     private int numRows;
     private int numCols;
     private boolean isTransposed;
@@ -42,7 +43,7 @@ public class Matriz {
     }
     
     // Constructor que crea una matriz a partir de un vector de Vector
-    public Matriz(ArrayList<Vector> vectors) {
+    public Matriz(List<Vector> vectors) {
     	this(vectors.size(), vectors.get(0).size());
         // Verificar si el ArrayList está vacío
         if (vectors == null || vectors.isEmpty()) {
@@ -83,7 +84,7 @@ public class Matriz {
     }
     
     // Método auxiliar para obtener una columna de una matriz
-    private static Vector getColumn(ArrayList<Vector> matrix, int colIndex) {
+    private static Vector getColumn(List<Vector> matrix, int colIndex) {
         Vector column = new Vector();
         for (int i = 0; i < matrix.size(); i++) {
             column.add(matrix.get(i).get(colIndex));
@@ -174,9 +175,9 @@ public class Matriz {
     	this.numCols += 1;
     }
     
-    public ArrayList<Vector> Normalizar(){
+    public List<Vector> Normalizar(){
     	this.transpose();
-    	ArrayList<Vector> nueva = this.matrix;
+    	List<Vector> nueva = this.matrix;
     	for (Vector fila: nueva) fila.normalize();
     	this.transpose();
     	return nueva;
