@@ -12,7 +12,7 @@ import vectores.Matriz;
 public class Entrenamiento {
 	private Dataset train;
 	private Dataset test;
-	private ArrayList<String> clases;
+	private List<String> clases;
 	
 	public Entrenamiento() {
 	}
@@ -104,8 +104,8 @@ public class Entrenamiento {
 	public void read(String filename1, String filename2) throws IOException {
 		train = new Dataset(filename1);
         test = new Dataset(filename2);
-        ArrayList<String> clasesA = train.getClases();
-        ArrayList<String> clasesB = test.getClases();
+        List<String> clasesA = train.getClases();
+        List<String> clasesB = test.getClases();
         for (int i = 0; i < clasesB.size(); i++) {
         	if (!clasesA.contains(clasesB.get(i))) clasesA.add(clasesB.get(i));
         }

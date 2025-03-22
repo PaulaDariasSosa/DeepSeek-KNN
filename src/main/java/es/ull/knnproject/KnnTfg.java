@@ -3,7 +3,6 @@ package knnproject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
 
 import org.slf4j.Logger;
@@ -26,12 +25,12 @@ public class KnnTfg  {
 		while(!salida) {
 			logger.info("Seleccione una opción: ");
 			logger.info("   [1] Cargar un dataset ");
-			logger.info("	[2] Guargar un dataset ");
-			logger.info("	[3] Modificar un dataset ");
-			logger.info("	[4] Mostrar información ");
-			logger.info("	[5] Salir del programa ");
-			logger.info("	[6] Realizar experimentación ");
-			logger.info("	[7] Algoritmo KNN para una instancia ");
+			logger.info("   [2] Guargar un dataset ");
+			logger.info("   [3] Modificar un dataset ");
+			logger.info("   [4] Mostrar información ");
+			logger.info("   [5] Salir del programa ");
+			logger.info("   [6] Realizar experimentación ");
+			logger.info("   [7] Algoritmo KNN para una instancia ");
 			int opcion = 1;
 			Scanner scanner = new Scanner(System.in);
 			opcion = scanner.nextInt();
@@ -93,10 +92,10 @@ public class KnnTfg  {
 		String archivo = "";
 		while (opcion != 4) {
 			logger.info("Se debe especificar la ruta y nombre del archivo: ");
-			logger.info("		[1] Introducir nombre");
-			logger.info("		[2] Mostrar ruta ");
-			logger.info("		[3] Cambiar ruta ");
-			logger.info("		[4] Salir ");
+			logger.info("       [1] Introducir nombre");
+			logger.info("       [2] Mostrar ruta ");
+			logger.info("       [3] Cambiar ruta ");
+			logger.info("       [4] Salir ");
 			Scanner scanner = new Scanner(System.in);
 			opcion = scanner.nextInt();
 			switch(opcion) {
@@ -124,11 +123,11 @@ public class KnnTfg  {
 		String valores = "";
 		while (opcion != 5) {
 			logger.info("Elija una opción de modificación ");
-			logger.info("		[1] Añadir instancia ");
-			logger.info("		[2] Eliminar instancia ");
-			logger.info("		[3] Modificar instancia ");
-			logger.info("		[4] Cambiar peso de los atributos ");
-			logger.info("		[5] Salir ");
+			logger.info("       [1] Añadir instancia ");
+			logger.info("       [2] Eliminar instancia ");
+			logger.info("       [3] Modificar instancia ");
+			logger.info("       [4] Cambiar peso de los atributos ");
+			logger.info("       [5] Salir ");
 			Scanner scanner = new Scanner(System.in);
 			opcion = scanner.nextInt();
 			switch(opcion) {
@@ -177,10 +176,10 @@ public class KnnTfg  {
 	
 	public static Dataset preprocesar(Dataset data) {
 		logger.info("Seleccione la opción de preprocesado: ");
-		logger.info("		[1] Datos crudos ");
-		logger.info("		[2] Rango 0-1 "); // por defecto
-		logger.info("		[3] Estandarización ");
-		logger.info("		[4] Salir ");
+		logger.info("       [1] Datos crudos ");
+		logger.info("       [2] Rango 0-1 "); // por defecto
+		logger.info("       [3] Estandarización ");
+		logger.info("       [4] Salir ");
 		int opcion = 1;
 		Scanner scanner = new Scanner(System.in);
 		opcion = scanner.nextInt();
@@ -207,9 +206,9 @@ public class KnnTfg  {
 	}
 	
 	public static Dataset CambiarPesos(Dataset data) {
-		logger.info("			[1] Asignar pesos distintos a todos los atributos ");
-		logger.info("			[2] Mismo peso para todos los atributos "); // por defecto ( valor 1 )
-		logger.info("			[3] Cambiar peso un atributo");
+		logger.info("           [1] Asignar pesos distintos a todos los atributos ");
+		logger.info("           [2] Mismo peso para todos los atributos "); // por defecto ( valor 1 )
+		logger.info("           [3] Cambiar peso un atributo");
 		int opcion = 1;
 		Scanner scanner = new Scanner(System.in);
 		opcion = scanner.nextInt();
@@ -246,11 +245,11 @@ public class KnnTfg  {
 	}
 	
 	public static void info(Dataset data) {
-		logger.info("			[1] Mostrar dataset ");
-		logger.info("			[2] Mostrar instancia ");
-		logger.info("			[3] Mostrar información atributos cuantitativos");
-		logger.info("			[4] Mostrar información atributos cualitativos");
-		logger.info("			[5] Mostrar pesos de los atributos");
+		logger.info("           [1] Mostrar dataset ");
+		logger.info("           [2] Mostrar instancia ");
+		logger.info("           [3] Mostrar información atributos cuantitativos");
+		logger.info("           [4] Mostrar información atributos cualitativos");
+		logger.info("           [5] Mostrar pesos de los atributos");
 		int opcion = 1;
 		Scanner scanner = new Scanner(System.in);
 		opcion = scanner.nextInt();
@@ -283,11 +282,11 @@ public class KnnTfg  {
 	}
 	
 	public static void infoCuantitativo(Dataset data) {
-		logger.info("				[1] Mostrar nombre ");
-		logger.info("				[2] Mostrar media ");
-		logger.info("				[3] Mostrar maximo");
-		logger.info("				[4] Mostrar minimo");
-		logger.info("				[5] Mostrar desviación tipica");
+		logger.info("               [1] Mostrar nombre ");
+		logger.info("               [2] Mostrar media ");
+		logger.info("               [3] Mostrar maximo");
+		logger.info("               [4] Mostrar minimo");
+		logger.info("               [5] Mostrar desviación tipica");
 		int opcion = 1;
 		Scanner scanner = new Scanner(System.in);
 		opcion = scanner.nextInt();
@@ -333,10 +332,10 @@ public class KnnTfg  {
 	}
 	
 	public static void infoCualitativo(Dataset data) {
-		logger.info("				[1] Mostrar nombre ");
-		logger.info("				[2] Mostrar número de clases ");
-		logger.info("				[3] Mostrar clases");
-		logger.info("				[4] Mostrar frecuencia");
+		logger.info("               [1] Mostrar nombre ");
+		logger.info("               [2] Mostrar número de clases ");
+		logger.info("               [3] Mostrar clases");
+		logger.info("               [4] Mostrar frecuencia");
 		int opcion = 1;
 		Scanner scanner = new Scanner(System.in);
 		opcion = scanner.nextInt();
@@ -392,11 +391,11 @@ public class KnnTfg  {
 		Scanner scanner = new Scanner(System.in);
 		Entrenamiento nuevo = new Entrenamiento();
 		while (opcion != 5) {
-			logger.info("				[1] Generacion experimentación normal");
-			logger.info("				[2] Generacion experimentación aleatoria");
-			logger.info("				[3] Guardar Dataset ");
-			logger.info("				[4] Cargar Dataset ");
-			logger.info("				[5] Salir");
+			logger.info("               [1] Generacion experimentación normal");
+			logger.info("               [2] Generacion experimentación aleatoria");
+			logger.info("               [3] Guardar Dataset ");
+			logger.info("               [4] Cargar Dataset ");
+			logger.info("               [5] Salir");
 			opcion = scanner.nextInt();
 			switch(opcion) {
 			case(1):
@@ -442,8 +441,8 @@ public class KnnTfg  {
 	}
 	
 	public static Entrenamiento experimentacionAleatoria(Dataset datos) throws IOException {
-		logger.info("				[1] Semilla(Seed) por defecto");
-		logger.info("				[2] Semilla(Seed) manual");
+		logger.info("               [1] Semilla(Seed) por defecto");
+		logger.info("               [2] Semilla(Seed) manual");
 		int opcion = 1;
 		Scanner scanner = new Scanner(System.in);
 		opcion = scanner.nextInt();

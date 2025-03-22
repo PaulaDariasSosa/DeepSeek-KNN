@@ -38,5 +38,5 @@ public abstract class Atributo {
 	
 	public abstract void clear();
 	
-	public abstract Atributo clone();
+	public abstract Atributo copiar();
 }

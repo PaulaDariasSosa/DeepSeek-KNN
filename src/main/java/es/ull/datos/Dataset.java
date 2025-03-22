@@ -6,16 +6,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Dataset {
-	private ArrayList<Atributo> atributos;
+	private List<Atributo> atributos;
 	int preprocesado;
 	
 	public Dataset() {
 		this.atributos = new ArrayList<Atributo>();
 	}
 	
-	public Dataset(ArrayList<Atributo> nuevos) {
+	public Dataset(List<Atributo> nuevos) {
 		this();
 		this.atributos = nuevos;
 	}
@@ -64,7 +65,7 @@ public class Dataset {
 	// toString
 	public String toString() {
 		String data = "";
-		ArrayList<String> valores = this.NombreAtributos();
+		List<String> valores = this.NombreAtributos();
 		valores.addAll(this.getValores());
 		int contador = 1;
 		for (int i = 0; i < valores.size(); ++i) { 
@@ -155,18 +156,18 @@ public class Dataset {
 	}
 	
 	// nombre atributos
-	public ArrayList<String> NombreAtributos(){
+	public List<String> NombreAtributos(){
 		ArrayList<String> nombres = new ArrayList<>();
 		for(int i = 0; i < atributos.size(); ++i) nombres.add(atributos.get(i).getNombre());
 		return nombres;
 	}
 	
-	public ArrayList<Atributo> getAtributos(){
+	public List<Atributo> getAtributos(){
 		return atributos;
 	}
 	
-	public ArrayList<Atributo> getAtributosEmpty() {
-		ArrayList<Atributo> aux = new ArrayList<Atributo> (atributos.size());
+	public List<Atributo> getAtributosEmpty() {
+		List<Atributo> aux = new ArrayList<Atributo> (atributos.size());
 		for (int i = 0; i < atributos.size(); ++i) {
 			try {
 				Cualitativo auxiliar = (Cualitativo) atributos.get(i);
@@ -189,7 +190,7 @@ public class Dataset {
 		return atributos.get(0).size();
 	}
 
-	public ArrayList<String> getValores(){
+	public List<String> getValores(){
 		ArrayList<String> valores = new ArrayList<String>();
 		 for (int i = 0; i < atributos.get(0).size(); ++i) {
 	        	for (int j = 0; j < atributos.size(); ++j) valores.add(String.valueOf(atributos.get(j).getValor(i)));
@@ -208,13 +209,13 @@ public class Dataset {
 		return nuevo;
 	}
 	
-	public ArrayList<String> getPesos() {
+	public List<String> getPesos() {
 		ArrayList<String> valores = new ArrayList<String>();
 		for (Atributo valor : this.atributos) valores.add(valor.get());
 		return valores;
 	}
 	
-	public ArrayList<String> getClases() {
+	public List<String> getClases() {
 		return ((Cualitativo) this.atributos.get(atributos.size()-1)).clases();
 	}
 	
@@ -226,7 +227,7 @@ public class Dataset {
 		this.preprocesado = opcion;
 	}
 	
-	public void setAtributos(ArrayList<Atributo> nuevos) {
+	public void setAtributos(List<Atributo> nuevos) {
 		this.atributos = nuevos;
 	}
 	
@@ -235,7 +236,7 @@ public class Dataset {
 	    // Realizar una copia profunda de los elementos de la lista
 		ArrayList<Atributo> copiaAtributos = new ArrayList<>();
 	    for (Atributo atributo : this.atributos) {
-	        copiaAtributos.add(atributo.clone());
+	        copiaAtributos.add(atributo.copiar());
 	    }
 	    copia.setAtributos(copiaAtributos);
 	    return copia;
