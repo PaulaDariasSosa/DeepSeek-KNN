@@ -22,7 +22,7 @@ public class KNN {
 	for (Atributo str : pesosString) {
         pesosDouble.add(str.getPeso());
     }
-    for (int i = 0; i < datos.NumeroCasos(); ++i) {
+    for (int i = 0; i < datos.numeroCasos(); ++i) {
     	aux.add(this.getDistanciaEuclidea(datos.getInstance(i).getVector(), nueva.getVector(), pesosDouble));
     }
     return aux;
@@ -91,7 +91,7 @@ public class KNN {
   public String clasificar(Dataset datos, Instancia nueva) {
 	  Vector aux = this.getDistancias(datos, nueva);
 	  List<Instancia> elegidos = new ArrayList<>();
-	  for (int i = 0; i < datos.NumeroCasos(); ++i) {
+	  for (int i = 0; i < datos.numeroCasos(); ++i) {
 	    elegidos.add(datos.getInstance(i));
 	  }
 	  return this.getVecino(elegidos, aux);

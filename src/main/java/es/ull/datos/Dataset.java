@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class Dataset {
 	private List<Atributo> atributos;
@@ -30,55 +31,74 @@ public class Dataset {
 		this();
 		this.atributos = new ArrayList<>(datos.atributos);
 	}
-	
-	// Cambiar Peso para todos
-	public void CambiarPeso(ArrayList<String> arrayList) {
-		if ( arrayList.size() != atributos.size()) throw new IllegalArgumentException("El número de pesos para asignar debe ser igual al número de atributos");
-        for (int i = 0; i <  arrayList.size(); i++) {
-        	Atributo aux = atributos.get(i);
-        	aux.setPeso(Double.parseDouble(arrayList.get(i)));
-        	this.atributos.set(i, aux);
-        }
+
+	/**
+	 * Cambia el peso de todos los atributos en el dataset.
+	 *
+	 * @param pesos Una lista de pesos (en formato String) que se asignarán a los atributos.
+	 * @throws IllegalArgumentException Si la lista de pesos no tiene el mismo tamaño que la lista de atributos,
+	 *                                  o si algún peso no es un número válido o está fuera del rango permitido.
+	 */
+	public void cambiarPeso(List<String> pesos) {
+		if (pesos.size() != atributos.size()) {
+			throw new IllegalArgumentException("El número de pesos para asignar debe ser igual al número de atributos");
+		}
+		for (int i = 0; i < pesos.size(); i++) {
+			Atributo aux = atributos.get(i);
+			aux.setPeso(Double.parseDouble(pesos.get(i)));
+			this.atributos.set(i, aux);
+		}
 	}
-	
+
+
 	// Cambiar peso para uno
 	public void CambiarPeso(int index, double peso) {
 		Atributo aux = this.atributos.get(index);
 		aux.setPeso(peso);
 		this.atributos.set(index, aux);
 	}
-	
-	// Cambiar mismo Peso para todos
+
+	/**
+	 * Cambia el peso de todos los atributos en el dataset.
+	 *
+	 * @param peso El nuevo peso que se asignará a todos los atributos.
+	 * @throws IllegalArgumentException Si el peso no es válido (por ejemplo, fuera de un rango específico).
+	 */
 	public void CambiarPeso(double peso) {
-	       for (int i = 0; i <  atributos.size(); i++) {
-	        Atributo aux = atributos.get(i);
-	        aux.setPeso(peso);
-	        this.atributos.set(i, aux);
-	       }
+		// Validar que el peso esté en un rango válido (opcional)
+		if (peso < 0 || peso > 1) {
+			throw new IllegalArgumentException("El peso debe estar entre 0 y 1.");
+		}
+
+		// Cambiar el peso de todos los atributos
+		for (Atributo atributo : atributos) {
+			atributo.setPeso(peso);
+		}
 	}
 	
 	// Print
 	public void print() {
-		System.out.println(this.toString());
+		Logger logger = Logger.getLogger(Dataset.class.getName());
+		logger.info(this.toString());
 	}
 	
 	// toString
 	public String toString() {
-		String data = "";
-		List<String> valores = this.NombreAtributos();
+		StringBuilder data = new StringBuilder();
+		List<String> valores = this.nombreAtributos();
 		valores.addAll(this.getValores());
 		int contador = 1;
-		for (int i = 0; i < valores.size(); ++i) { 
-			data += valores.get(i);
-			if (contador == this.NumeroAtributos()) {
-				data += "\n";
+		for (int i = 0; i < valores.size(); ++i) {
+			data.append(valores.get(i));
+			if (contador == this.numeroAtributos()) {
+				data.append("\n");
 				contador = 1;
 			} else {
-				data += ",";
+				data.append(",");
 				++contador;
 			}
 		}
-	    return data;
+		return data.toString();
 	}
 	
 	// Modify (mezcla de add y delete)
@@ -104,7 +124,6 @@ public class Dataset {
 	}
 	// Delete
 	public void delete(int nueva) {
-		//atributos.forEach(atributo -> atributo.delete(nueva));
 		for (int i = 0; i < atributos.size(); ++i) {
 			Atributo aux = atributos.get(i);
 			aux.delete(nueva);
@@ -151,12 +170,12 @@ public class Dataset {
 	}
 	
 	// numero atributos
-	public int NumeroAtributos() {
+	public int numeroAtributos() {
 		return atributos.size();
 	}
 	
 	// nombre atributos
-	public List<String> NombreAtributos(){
+	public List<String> nombreAtributos(){
 		ArrayList<String> nombres = new ArrayList<>();
 		for(int i = 0; i < atributos.size(); ++i) nombres.add(atributos.get(i).getNombre());
 		return nombres;
@@ -186,7 +205,7 @@ public class Dataset {
 	}
 	
 	// numero casos
-	public int NumeroCasos() {
+	public int numeroCasos() {
 		return atributos.get(0).size();
 	}
 
@@ -205,8 +224,7 @@ public class Dataset {
 	public Instancia getInstance(int index){
 	 	ArrayList<Object> auxiliar = new ArrayList<>();
 		for (int i = 0; i < atributos.size(); ++i) auxiliar.add(atributos.get(i).getValor(index));
-		Instancia nuevo = new Instancia (auxiliar);
-		return nuevo;
+		return new Instancia (auxiliar);
 	}
 	
 	public List<String> getPesos() {
@@ -231,7 +249,7 @@ public class Dataset {
 		this.atributos = nuevos;
 	}
 	
-	public Dataset clone() {
+	public Dataset copiar() {
 		Dataset copia = new Dataset();
 	    // Realizar una copia profunda de los elementos de la lista
 		ArrayList<Atributo> copiaAtributos = new ArrayList<>();

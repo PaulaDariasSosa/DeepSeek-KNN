@@ -7,7 +7,6 @@ import java.util.*;
 
 import clasificacion.KNN;
 import datos.*;
-import knnproject.KnnTfg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vectores.Matriz;
@@ -25,11 +24,11 @@ public class Entrenamiento {
 		Dataset testset = new Dataset(datos.getAtributosEmpty());
 		clases = datos.getClases();
 		int indice = 0;
-		while(indice < datos.NumeroCasos()*porcentaje) {
+		while(indice < datos.numeroCasos()*porcentaje) {
 			trainset.add(datos.getInstance(indice));
 			indice += 1;
 		}
-		for (int i = indice; i < datos.NumeroCasos(); ++i) {
+		for (int i = indice; i < datos.numeroCasos(); ++i) {
 			testset.add(datos.getInstance(i));
 		}
 		this.test = testset;
@@ -45,14 +44,14 @@ public class Entrenamiento {
 		ArrayList<Integer> indices = new ArrayList<>();
 		@SuppressWarnings("squid:S2245")
 		Random random = new Random(semilla);
-		while(indices.size() < datos.NumeroCasos()*porcentaje) {
-			int randomNumber = random.nextInt(datos.NumeroCasos());
+		while(indices.size() < datos.numeroCasos()*porcentaje) {
+			int randomNumber = random.nextInt(datos.numeroCasos());
 			if (!indices.contains(randomNumber)) {
 				trainset.add(datos.getInstance(randomNumber));
 				indices.add(randomNumber);
 			}
 		}
-		for (int i = 0; i < datos.NumeroCasos(); ++i) {
+		for (int i = 0; i < datos.numeroCasos(); ++i) {
 			if (!indices.contains(i)) {
 				testset.add(datos.getInstance(i));
 			}
@@ -66,9 +65,9 @@ public class Entrenamiento {
 	public void generarPrediccion(int valorK) {
 		Dataset pruebas = new Dataset(test);
 		Double aciertos = 0.0;
-		for (int i = 0; i < pruebas.NumeroCasos(); ++i) {
+		for (int i = 0; i < pruebas.numeroCasos(); ++i) {
 			ArrayList<Object> instance = new ArrayList<>();
-			for (int j = 0; j < pruebas.NumeroAtributos()-1; ++j) {
+			for (int j = 0; j < pruebas.numeroAtributos()-1; ++j) {
 				instance.add(pruebas.getInstance(i).getValores().get(j));
 			}
 			Instancia nueva = new Instancia(instance);
@@ -76,16 +75,16 @@ public class Entrenamiento {
 			if (clase.equals(test.getInstance(i).getClase())) aciertos += 1;
 		}
 		Logger logger = LoggerFactory.getLogger(Entrenamiento.class);
-		logger.info("La precisión predictiva: " + aciertos + " / " + test.NumeroCasos() +" = "+ (aciertos/test.NumeroCasos())*100 + "%");
+		logger.info("La precisión predictiva: " + aciertos + " / " + test.numeroCasos() +" = "+ (aciertos/test.numeroCasos())*100 + "%");
 		
 	}
 	
 	public void generarMatriz(int valorK) {
 		Dataset pruebas = new Dataset(test);
 		Matriz confusion = new Matriz (clases.size(), clases.size());
-		for (int i = 0; i < pruebas.NumeroCasos(); ++i) {
+		for (int i = 0; i < pruebas.numeroCasos(); ++i) {
 			ArrayList<Object> instance = new ArrayList<>();
-			for (int j = 0; j < pruebas.NumeroAtributos()-1; ++j) {
+			for (int j = 0; j < pruebas.numeroAtributos()-1; ++j) {
 				instance.add(pruebas.getInstance(i).getValores().get(j));
 			}
 			Instancia nueva = new Instancia(instance);

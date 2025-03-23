@@ -68,7 +68,7 @@ public class KnnTfg  {
 				String[] subcadenas = valoresString.split(",");
 				ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(subcadenas));
 				Instancia instance = new Instancia (valoresString);
-				Dataset copiaCrudos = new Dataset(datosCrudos.clone());
+				Dataset copiaCrudos = new Dataset(datosCrudos.copiar());
 				if (datos.getPreprocesado() != 1) {
 					arrayList.add("clase");
 					copiaCrudos.add(arrayList);
@@ -76,8 +76,8 @@ public class KnnTfg  {
 					if (datos.getPreprocesado() == 2) intento1 = new Normalizacion();
 					if (datos.getPreprocesado() == 3) intento1 = new Estandarizacion();
 					copiaCrudos = new Dataset (intento1.procesar(copiaCrudos));
-					instance = copiaCrudos.getInstance(copiaCrudos.NumeroCasos()-1);
-					copiaCrudos.delete(copiaCrudos.NumeroCasos()-1);
+					instance = copiaCrudos.getInstance(copiaCrudos.numeroCasos()-1);
+					copiaCrudos.delete(copiaCrudos.numeroCasos()-1);
 					instance.deleteClase();
 				}
 				logger.info("La clase elegida es: " + intento.clasificar(copiaCrudos, instance));
@@ -220,7 +220,7 @@ public class KnnTfg  {
 			valores = scanner1.nextLine();
 			String[] subcadenas = valores.split(",");
 			ArrayList<String> arrayList = new ArrayList<String>(Arrays.asList(subcadenas));
-			data.CambiarPeso(arrayList);
+			data.cambiarPeso(arrayList);
 			return data;
 		case(2):
 			double valoresD = 1.0;

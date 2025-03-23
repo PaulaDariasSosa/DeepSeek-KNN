@@ -111,6 +111,6 @@ public class Cuantitativo extends Atributo{
 	
 	@Override
 	public Cuantitativo copiar() {
-		return new Cuantitativo(this.nombre, this.valores.clone());
+		return new Cuantitativo(this.nombre, this.valores.copiar());
 	}
 }
