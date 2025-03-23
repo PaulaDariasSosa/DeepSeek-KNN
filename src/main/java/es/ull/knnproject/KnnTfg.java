@@ -405,6 +405,11 @@ public class KnnTfg  {
 				nombre1.append(clase);
 				nombre1.append(" ");
 			}
+			nombre1.append("\n");
+			for(Double clase: auxiliar.frecuencia()) {
+				nombre1.append(clase);
+				nombre1.append(" ");
+			}
 			if (logger.isInfoEnabled()) {
 				logger.info(nombre1.toString());
 			}
