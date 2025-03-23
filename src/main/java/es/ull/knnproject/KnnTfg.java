@@ -15,6 +15,9 @@ import entrenamiento.*;
 
 public class KnnTfg  {
 	private static final Logger logger = LoggerFactory.getLogger(KnnTfg.class);
+	public static final String MENSAJE_INTRODUCIR_K = "Introduce el valor de k: ";
+	public static final String MENSAJE_INTRODUCIR_VALORES = "Introduce los valores: ";
+	public static final String MENSAJE_CONJUNTO_ENTRENAMIENTO = "Introduzca el porcentaje para el conjunto de entrenamiento";
 
 	public static void main(String[] args) throws IOException {
 		String ruta = "";
@@ -58,11 +61,11 @@ public class KnnTfg  {
 				experimentar(datos);
 				break;
 			case(7):
-				logger.info("Introduce el valor de k: ");
+				logger.info(MENSAJE_INTRODUCIR_K);
 				int k = scanner.nextInt();
 				KNN intento = new KNN(k);
 				String valoresString = "";
-				logger.info("Introduce los valores: ");
+				logger.info(MENSAJE_INTRODUCIR_VALORES);
 				Scanner scanner1 = new Scanner(System.in);
 				valoresString = scanner1.nextLine();
 				String[] subcadenas = valoresString.split(",");
@@ -80,7 +83,7 @@ public class KnnTfg  {
 					copiaCrudos.delete(copiaCrudos.numeroCasos()-1);
 					instance.deleteClase();
 				}
-				logger.info("La clase elegida es: " + intento.clasificar(copiaCrudos, instance));
+				logger.info("La clase elegida es: {}", intento.clasificar(copiaCrudos, instance));
 				break;
 			default:
 			}
@@ -133,12 +136,14 @@ public class KnnTfg  {
 			switch(opcion) {
 			case(1):
 				valores = "";
-				logger.info("Introduce los valores: ");
+				logger.info(MENSAJE_INTRODUCIR_VALORES);
 				Scanner scanner1 = new Scanner(System.in);
 				valores = scanner1.nextLine();
 				String[] subcadenas = valores.split(",");
 				ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(subcadenas));
-				logger.info(String.valueOf(arrayList));
+				if(logger.isInfoEnabled()) {
+					logger.info(String.valueOf(arrayList));
+				}
 				data.add(arrayList);
 				return data;
 			case(2):
@@ -150,7 +155,7 @@ public class KnnTfg  {
 				return data;
 			case(3):
 				valores = "";
-				logger.info("Introduce los valores: ");
+				logger.info(MENSAJE_INTRODUCIR_VALORES);
 				scanner1 = new Scanner(System.in);
 				valores = scanner1.nextLine();
 				subcadenas = valores.split(",");
@@ -163,7 +168,7 @@ public class KnnTfg  {
 				data.delete(valor);
 				return data;
 			case(4):
-				data = CambiarPesos(data);
+				data = cambiarPesos(data);
 			return data;
 			case(5):
 				break;
@@ -205,7 +210,7 @@ public class KnnTfg  {
 		return data;
 	}
 	
-	public static Dataset CambiarPesos(Dataset data) {
+	public static Dataset cambiarPesos(Dataset data) {
 		logger.info("           [1] Asignar pesos distintos a todos los atributos ");
 		logger.info("           [2] Mismo peso para todos los atributos "); // por defecto ( valor 1 )
 		logger.info("           [3] Cambiar peso un atributo");
@@ -226,7 +231,7 @@ public class KnnTfg  {
 			double valoresD = 1.0;
 			scanner1 = new Scanner(System.in);
 			valoresD = scanner1.nextDouble();
-			data.CambiarPeso(valoresD);
+			data.cambiarPeso(valoresD);
 			return data;
 		case(3):
 			int valorI = 0;
@@ -236,7 +241,7 @@ public class KnnTfg  {
 			logger.info("Peso para asignar(Debe estar entre 0 y 1): ");
 			valoresD = 1.0;
 			valoresD = scanner1.nextDouble();
-			data.CambiarPeso(valorI, valoresD);
+			data.cambiarPeso(valorI, valoresD);
 			return data;
 		default:
 			break;
@@ -261,7 +266,9 @@ public class KnnTfg  {
 			int valor = 0;
 			Scanner scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
-			logger.info(data.getInstance(valor).toString());
+			if (logger.isInfoEnabled()) {
+				logger.info(data.getInstance(valor).toString());
+			}
 			break;
 		case(3):
 			infoCuantitativo(data);
@@ -270,11 +277,12 @@ public class KnnTfg  {
 			infoCualitativo(data);
 			break;
 		case(5):
-			String nombre = "";
+			StringBuilder nombre = new StringBuilder();
 			for(String peso: data.getPesos()) {
-				nombre += peso + " ";
+				nombre.append(peso);
+				nombre.append(" ");
 			}
-			logger.info(nombre);
+			logger.info(nombre.toString());
 			break;
 		default:
 			break;
@@ -303,28 +311,36 @@ public class KnnTfg  {
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			auxiliar = (Cuantitativo) data.get(valor);
-			logger.info(Double.toString(auxiliar.media()));
+			if (logger.isInfoEnabled()) {
+				logger.info(Double.toString(auxiliar.media()));
+			}
 			break;
 		case(3):
 				valor = 0;
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			auxiliar = (Cuantitativo) data.get(valor);
-			logger.info(Double.toString(auxiliar.maximo()));
+			if (logger.isInfoEnabled()) {
+				logger.info(Double.toString(auxiliar.maximo()));
+			}
 			break;
 		case(4):
 			valor = 0;
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			auxiliar = (Cuantitativo) data.get(valor);
-			logger.info(Double.toString(auxiliar.minimo()));
+			if (logger.isInfoEnabled()) {
+				logger.info(Double.toString(auxiliar.minimo()));
+			}
 			break;
 		case(5):
 			valor = 0;
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			auxiliar = (Cuantitativo) data.get(valor);
-			logger.info(Double.toString(auxiliar.desviacion()));
+			if (logger.isInfoEnabled()) {
+				logger.info(Double.toString(auxiliar.desviacion()));
+			}
 			break;
 		default:
 			break;
@@ -357,29 +373,33 @@ public class KnnTfg  {
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			Cualitativo auxiliar = (Cualitativo) data.get(valor);
-			logger.info(Integer.toString(auxiliar.nClases()));
+			if (logger.isInfoEnabled()) {
+				logger.info(Integer.toString(auxiliar.nClases()));
+			}
 			break;
 		case(3):
 				valor = 0;
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			auxiliar = (Cualitativo) data.get(valor);
-			String nombre = "";
+			StringBuilder nombre = new StringBuilder();
 			for(String clase: auxiliar.clases()) {
-				nombre += clase + " ";
+				nombre.append(clase);
+				nombre.append(" ");
 			}
-			logger.info(nombre);
+			logger.info(nombre.toString());
 			break;
 		case(4):
 			valor = 0;
 			scanner1 = new Scanner(System.in);
 			valor = scanner1.nextInt();
 			auxiliar = (Cualitativo) data.get(valor);
-			String nombre1 = "";
+			StringBuilder nombre1 = new StringBuilder();
 			for(String clase: auxiliar.clases()) {
-				nombre1 += clase + " ";
+				nombre1.append(clase);
+				nombre1.append(" ");
 			}
-			logger.info(nombre1);
+			logger.info(nombre1.toString());
 			break;
 		default:
 			break;
@@ -401,10 +421,10 @@ public class KnnTfg  {
 			case(1):
 				int valor = 0;
 				Scanner scanner1 = new Scanner(System.in);
-				logger.info("Introduzca el porcentaje para el conjunto de entrenamiento");
+				logger.info(MENSAJE_CONJUNTO_ENTRENAMIENTO);
 				valor = scanner1.nextInt();
 				nuevo = new Entrenamiento(datos, (double)valor/100);
-				logger.info("Introduce el valor de k: ");
+				logger.info(MENSAJE_INTRODUCIR_K);
 				int k = scanner.nextInt();
 				nuevo.generarPrediccion(k);
 				nuevo.generarMatriz(k);
@@ -429,7 +449,7 @@ public class KnnTfg  {
 				scanner1 = new Scanner(System.in);
 				archivo2 = scanner1.nextLine();
 				nuevo.read(archivo1, archivo2);
-				logger.info("Introduce el valor de k: ");
+				logger.info(MENSAJE_INTRODUCIR_K);
 				k = scanner.nextInt();
 				nuevo.generarPrediccion(k);
 				nuevo.generarMatriz(k);
@@ -440,7 +460,7 @@ public class KnnTfg  {
 		}
 	}
 	
-	public static Entrenamiento experimentacionAleatoria(Dataset datos) throws IOException {
+	public static Entrenamiento experimentacionAleatoria(Dataset datos) {
 		logger.info("               [1] Semilla(Seed) por defecto");
 		logger.info("               [2] Semilla(Seed) manual");
 		int opcion = 1;
@@ -451,10 +471,10 @@ public class KnnTfg  {
 		case(1):
 			int valor = 0;
 			Scanner scanner1 = new Scanner(System.in);
-			logger.info("Introduzca el porcentaje para el conjunto de entrenamiento");
+			logger.info(MENSAJE_CONJUNTO_ENTRENAMIENTO);
 			valor = scanner1.nextInt();
 			nuevo = new Entrenamiento(datos, (double)valor/100, 1234);
-			logger.info("Introduce el valor de k: ");
+			logger.info(MENSAJE_INTRODUCIR_K);
 			int k = scanner.nextInt();
 			nuevo.generarPrediccion(k);
 			nuevo.generarMatriz(k);
@@ -462,13 +482,13 @@ public class KnnTfg  {
 		case(2):
 			valor = 0;
 			scanner1 = new Scanner(System.in);
-			logger.info("Introduzca el porcentaje para el conjunto de entrenamiento");
+			logger.info(MENSAJE_CONJUNTO_ENTRENAMIENTO);
 			valor = scanner1.nextInt();
 			scanner1 = new Scanner(System.in);
 			logger.info("Introduzca la semilla para la generacion aleatoria");
 			int valor2 = scanner1.nextInt();
 			nuevo = new Entrenamiento(datos, (double)valor/100, valor2);
-			logger.info("Introduce el valor de k: ");
+			logger.info(MENSAJE_INTRODUCIR_K);
 			k = scanner.nextInt();
 			nuevo.generarPrediccion(k);
 			nuevo.generarMatriz(k);

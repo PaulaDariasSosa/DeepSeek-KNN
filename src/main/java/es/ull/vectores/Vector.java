@@ -1,5 +1,8 @@
 package vectores;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,6 +15,7 @@ import java.util.Scanner;
 
 public class Vector {
 	private ArrayList<Double> coef;
+    public static final String MENSAJE_TAMANO_VECTOR = "Los vectores deben tener el mismo tamaño";
 
     /**
      * Constructor vacio
@@ -109,7 +113,10 @@ public class Vector {
     }
 
     public void print() {
-        System.out.println(this.toString());
+        Logger logger = LoggerFactory.getLogger(Vector.class);
+        if (logger.isInfoEnabled()) {
+            logger.info(this.toString());
+        }
     }
 
     public double get(int index) {
@@ -125,7 +132,7 @@ public class Vector {
     }
     
     public void add(Vector other) {
-        if (this.size() != other.size()) throw new IllegalArgumentException("Los vectores deben tener el mismo tamaño");
+        if (this.size() != other.size()) throw new IllegalArgumentException(MENSAJE_TAMANO_VECTOR);
         for (int i = 0; i < this.size(); i++) {
         	coef.set(i, coef.get(i) + other.get(i));
         }
@@ -166,7 +173,7 @@ public class Vector {
     
     // cambiar nombre
     public double productoEscalar(Vector other) {
-        if (this.size() != other.size())throw new IllegalArgumentException("Los vectores deben tener el mismo tamaño");
+        if (this.size() != other.size())throw new IllegalArgumentException(MENSAJE_TAMANO_VECTOR);
         double result = 0;
         for (int i = 0; i < this.size(); i++) result += this.get(i) * other.get(i);
         return result;
@@ -181,7 +188,7 @@ public class Vector {
     }
 
     public Vector sum(Vector other) {
-        if (this.size() != other.size()) throw new IllegalArgumentException("Los vectores deben tener el mismo tamaño");
+        if (this.size() != other.size()) throw new IllegalArgumentException(MENSAJE_TAMANO_VECTOR);
         Vector suma = new Vector();
         for (int i = 0; i < this.size(); i++) {
         	suma.add(coef.get(i) + other.get(i));

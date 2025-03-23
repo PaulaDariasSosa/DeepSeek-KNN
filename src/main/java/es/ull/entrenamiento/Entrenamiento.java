@@ -75,8 +75,10 @@ public class Entrenamiento {
 			if (clase.equals(test.getInstance(i).getClase())) aciertos += 1;
 		}
 		Logger logger = LoggerFactory.getLogger(Entrenamiento.class);
-		logger.info("La precisión predictiva: " + aciertos + " / " + test.numeroCasos() +" = "+ (aciertos/test.numeroCasos())*100 + "%");
-		
+		if (logger.isInfoEnabled()) {
+			double precision = (aciertos / test.numeroCasos()) * 100;
+			logger.info("La precisión predictiva: {} / {} = {}%", aciertos, test.numeroCasos(), precision);
+		}
 	}
 	
 	public void generarMatriz(int valorK) {
@@ -92,7 +94,9 @@ public class Entrenamiento {
 			confusion.set( clases.indexOf(test.getInstance(i).getClase()),clases.indexOf(clase),confusion.get(clases.indexOf(test.getInstance(i).getClase()),clases.indexOf(clase))+1);
 		}
 		Logger logger = LoggerFactory.getLogger(Entrenamiento.class);
-		logger.info(String.valueOf(clases));
+		if (logger.isInfoEnabled()) {
+			logger.info(String.valueOf(clases));
+		}
 		confusion.print();
 	}
 	

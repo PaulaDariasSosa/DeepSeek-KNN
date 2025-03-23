@@ -7,7 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Dataset {
 	private List<Atributo> atributos;
@@ -52,7 +53,7 @@ public class Dataset {
 
 
 	// Cambiar peso para uno
-	public void CambiarPeso(int index, double peso) {
+	public void cambiarPeso(int index, double peso) {
 		Atributo aux = this.atributos.get(index);
 		aux.setPeso(peso);
 		this.atributos.set(index, aux);
@@ -64,7 +65,7 @@ public class Dataset {
 	 * @param peso El nuevo peso que se asignará a todos los atributos.
 	 * @throws IllegalArgumentException Si el peso no es válido (por ejemplo, fuera de un rango específico).
 	 */
-	public void CambiarPeso(double peso) {
+	public void cambiarPeso(double peso) {
 		// Validar que el peso esté en un rango válido (opcional)
 		if (peso < 0 || peso > 1) {
 			throw new IllegalArgumentException("El peso debe estar entre 0 y 1.");
@@ -78,8 +79,10 @@ public class Dataset {
 	
 	// Print
 	public void print() {
-		Logger logger = Logger.getLogger(Dataset.class.getName());
-		logger.info(this.toString());
+		Logger logger = LoggerFactory.getLogger(Dataset.class.getName());
+		if (logger.isInfoEnabled()) {
+			logger.info(this.toString());
+		}
 	}
 	
 	// toString
