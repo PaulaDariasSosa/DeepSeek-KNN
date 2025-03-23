@@ -24,73 +24,95 @@ public class KnnTfg  {
 		boolean salida = false;
 		Dataset datosCrudos = new Dataset();
 		Dataset datos = new Dataset();
-		String archivo;
-		while(!salida) {
-			logger.info("Seleccione una opción: ");
-			logger.info("   [1] Cargar un dataset ");
-			logger.info("   [2] Guargar un dataset ");
-			logger.info("   [3] Modificar un dataset ");
-			logger.info("   [4] Mostrar información ");
-			logger.info("   [5] Salir del programa ");
-			logger.info("   [6] Realizar experimentación ");
-			logger.info("   [7] Algoritmo KNN para una instancia ");
-			int opcion = 1;
-			Scanner scanner = new Scanner(System.in);
-			opcion = scanner.nextInt();
-			switch(opcion) {
-			case(1):
-				archivo = readFile(ruta);
-				datosCrudos = new Dataset(ruta+archivo);
-				datos = new Dataset(ruta+archivo);
-				datos = preprocesar(datos);
-				break;
-			case(2):
-				archivo = readFile(ruta);
-				datos.write(ruta+archivo);
-				break;
-			case(3):
-				datos = modify(datos);
-				break;
-			case(4):
-				info(datos);
-				break;
-			case(5):
-				salida = true;
-				break;
-			case(6):
-				experimentar(datos);
-				break;
-			case(7):
-				logger.info(MENSAJE_INTRODUCIR_K);
-				int k = scanner.nextInt();
-				KNN intento = new KNN(k);
-				String valoresString = "";
-				logger.info(MENSAJE_INTRODUCIR_VALORES);
-				Scanner scanner1 = new Scanner(System.in);
-				valoresString = scanner1.nextLine();
-				String[] subcadenas = valoresString.split(",");
-				ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(subcadenas));
-				Instancia instance = new Instancia (valoresString);
-				Dataset copiaCrudos = new Dataset(datosCrudos.copiar());
-				if (datos.getPreprocesado() != 1) {
-					arrayList.add("clase");
-					copiaCrudos.add(arrayList);
-					Preprocesado intento1 = new Normalizacion();
-					if (datos.getPreprocesado() == 2) intento1 = new Normalizacion();
-					if (datos.getPreprocesado() == 3) intento1 = new Estandarizacion();
-					copiaCrudos = new Dataset (intento1.procesar(copiaCrudos));
-					instance = copiaCrudos.getInstance(copiaCrudos.numeroCasos()-1);
-					copiaCrudos.delete(copiaCrudos.numeroCasos()-1);
-					instance.deleteClase();
-				}
-				if (logger.isInfoEnabled()) {
-					logger.info("La clase elegida es: {}", intento.clasificar(copiaCrudos, instance));
-				}
-				break;
-			default:
+		Scanner scanner = new Scanner(System.in);
+
+		while (!salida) {
+			mostrarMenu();
+			int opcion = scanner.nextInt();
+
+			switch (opcion) {
+				case 1:
+					Dataset[] datasets = cargarDataset(ruta);
+					datosCrudos = datasets[0];
+					datos = datasets[1];
+					break;
+				case 2:
+					guardarDataset(datos, ruta);
+					break;
+				case 3:
+					datos = modify(datos);
+					break;
+				case 4:
+					info(datos);
+					break;
+				case 5:
+					salida = true;
+					break;
+				case 6:
+					experimentar(datos);
+					break;
+				case 7:
+					ejecutarKNN(datosCrudos, datos, scanner);
+					break;
+				default:
+					logger.info("Opción no válida.");
 			}
 		}
-    }
+	}
+
+	private static void mostrarMenu() {
+		logger.info("Seleccione una opción: ");
+		logger.info("   [1] Cargar un dataset ");
+		logger.info("   [2] Guardar un dataset ");
+		logger.info("   [3] Modificar un dataset ");
+		logger.info("   [4] Mostrar información ");
+		logger.info("   [5] Salir del programa ");
+		logger.info("   [6] Realizar experimentación ");
+		logger.info("   [7] Algoritmo KNN para una instancia ");
+	}
+
+	private static Dataset[] cargarDataset(String ruta) throws IOException {
+		String archivo = readFile(ruta);
+		Dataset datosCrudos = new Dataset(ruta + archivo);
+		Dataset datos = new Dataset(ruta + archivo);
+		datos = preprocesar(datos);
+		return new Dataset[]{datosCrudos, datos};
+	}
+
+	private static void guardarDataset(Dataset datos, String ruta) throws IOException {
+		String archivo = readFile(ruta);
+		datos.write(ruta + archivo);
+	}
+
+	private static void ejecutarKNN(Dataset datosCrudos, Dataset datos, Scanner scanner) {
+		logger.info(MENSAJE_INTRODUCIR_K);
+		int k = scanner.nextInt();
+		KNN intento = new KNN(k);
+
+		logger.info(MENSAJE_INTRODUCIR_VALORES);
+		Scanner scanner1 = new Scanner(System.in);
+		String valoresString = scanner1.nextLine();
+		String[] subcadenas = valoresString.split(",");
+		ArrayList<String> arrayList = new ArrayList<>(Arrays.asList(subcadenas));
+		Instancia instance = new Instancia(valoresString);
+
+		Dataset copiaCrudos = new Dataset(datosCrudos.copiar());
+		if (datos.getPreprocesado() != 1) {
+			arrayList.add("clase");
+			copiaCrudos.add(arrayList);
+			Preprocesado intento1 = new Normalizacion();
+			if (datos.getPreprocesado() == 2) intento1 = new Normalizacion();
+			if (datos.getPreprocesado() == 3) intento1 = new Estandarizacion();
+			copiaCrudos = new Dataset(intento1.procesar(copiaCrudos));
+			instance = copiaCrudos.getInstance(copiaCrudos.numeroCasos() - 1);
+			copiaCrudos.delete(copiaCrudos.numeroCasos() - 1);
+			instance.deleteClase();
+		}
+
+		if (logger.isInfoEnabled()) {
+			logger.info("La clase elegida es: {}", intento.clasificar(copiaCrudos, instance));
+		}
+	}
 	
 	public static String readFile(String ruta) {
 		int opcion = 2;
