@@ -83,7 +83,9 @@ public class KnnTfg  {
 					copiaCrudos.delete(copiaCrudos.numeroCasos()-1);
 					instance.deleteClase();
 				}
-				logger.info("La clase elegida es: {}", intento.clasificar(copiaCrudos, instance));
+				if (logger.isInfoEnabled()) {
+					logger.info("La clase elegida es: {}", intento.clasificar(copiaCrudos, instance));
+				}
 				break;
 			default:
 			}
@@ -282,7 +284,9 @@ public class KnnTfg  {
 				nombre.append(peso);
 				nombre.append(" ");
 			}
-			logger.info(nombre.toString());
+			if (logger.isInfoEnabled()) {
+				logger.info(nombre.toString());
+			}
 			break;
 		default:
 			break;
@@ -387,7 +391,9 @@ public class KnnTfg  {
 				nombre.append(clase);
 				nombre.append(" ");
 			}
-			logger.info(nombre.toString());
+			if (logger.isInfoEnabled()) {
+				logger.info(nombre.toString());
+			}
 			break;
 		case(4):
 			valor = 0;
@@ -399,7 +405,9 @@ public class KnnTfg  {
 				nombre1.append(clase);
 				nombre1.append(" ");
 			}
-			logger.info(nombre1.toString());
+			if (logger.isInfoEnabled()) {
+				logger.info(nombre1.toString());
+			}
 			break;
 		default:
 			break;
