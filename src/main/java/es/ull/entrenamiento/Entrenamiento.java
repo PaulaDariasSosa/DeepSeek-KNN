@@ -62,7 +62,7 @@ public class Entrenamiento {
 		this.train.setPreprocesado(datos.getPreprocesado());
 	}
 	
-	public void generarPrediccion(int valorK) {
+	public void generarPrediccion(int valorK, String outputPath) {
 		Dataset pruebas = new Dataset(test);
 		Double aciertos = 0.0;
 		for (int i = 0; i < pruebas.numeroCasos(); ++i) {
@@ -78,6 +78,12 @@ public class Entrenamiento {
 		if (logger.isInfoEnabled()) {
 			double precision = (aciertos / test.numeroCasos()) * 100;
 			logger.info("La precisión predictiva: {} / {} = {}%", aciertos, test.numeroCasos(), precision);
+		}
+		try {
+			exportarResultados(outputPath, valorK);
+			logger.info("Resultados exportados exitosamente a {}", outputPath);
+		} catch (IOException e) {
+			logger.error("Error al exportar resultados: {}", e.getMessage());
 		}
 	}
 	
@@ -119,5 +125,62 @@ public class Entrenamiento {
         }
         clases = clasesA;
     }
+
+	/**
+	 * Exporta los resultados de clasificación a un archivo CSV
+	 * @param filename Nombre del archivo de salida
+	 * @param valorK Número de vecinos usados
+	 * @throws IOException Si ocurre un error al escribir el archivo
+	 */
+	public void exportarResultados(String filename, int valorK) throws IOException {
+		if (test == null || test.numeroCasos() == 0) {
+			throw new IllegalStateException("No hay datos de prueba para exportar");
+		}
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+			// Escribir encabezado
+			writer.write("Instancia,Clase Real,Clase Predicha,Correcto\n");
+
+			// Escribir cada resultado
+			for (int i = 0; i < test.numeroCasos(); i++) {
+				Instancia instancia = test.getInstance(i);
+				String claseReal = instancia.getClase();
+
+				ArrayList<Object> valores = new ArrayList<>();
+				for (int j = 0; j < test.numeroAtributos()-1; j++) {
+					valores.add(instancia.getValores().get(j));
+				}
+				Instancia sinClase = new Instancia(valores);
+
+				String clasePredicha = new KNN(valorK).clasificar(train, sinClase);
+				boolean correcto = claseReal.equals(clasePredicha);
+
+				writer.write(String.format("%d,%s,%s,%b%n",
+						i, claseReal, clasePredicha, correcto));
+			}
+
+			// Calcular y escribir precisión global
+			double precision = calcularPrecision(valorK);
+			writer.write("\nPrecision Global," + precision + "%");
+		}
+	}
+
+	private double calcularPrecision(int valorK) {
+		int aciertos = 0;
+		for (int i = 0; i < test.numeroCasos(); i++) {
+			Instancia instancia = test.getInstance(i);
+			ArrayList<Object> valores = new ArrayList<>();
+			for (int j = 0; j < test.numeroAtributos()-1; j++) {
+				valores.add(instancia.getValores().get(j));
+			}
+			String clasePredicha = new KNN(valorK).clasificar(train, new Instancia(valores));
+			if (instancia.getClase().equals(clasePredicha)) {
+				aciertos++;
+			}
+		}
+		return (aciertos * 100.0) / test.numeroCasos();
+	}
+
+
 	
 }

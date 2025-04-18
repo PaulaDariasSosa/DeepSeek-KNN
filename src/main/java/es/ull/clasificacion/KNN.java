@@ -3,6 +3,7 @@ package clasificacion;
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 import datos.*;
 import vectores.Vector;
@@ -13,20 +14,26 @@ public class KNN {
   public KNN (int k) {
 	  this.vecinos = k;
   }
-  
-  public Vector getDistancias(Dataset datos, Instancia nueva){
-	Vector aux = new Vector();
-	// obtenemos el peso de los atributos
-	List<Atributo>  pesosString = new ArrayList<>(datos.getAtributos());
-	List<Double> pesosDouble = new ArrayList<>();
-	for (Atributo str : pesosString) {
-        pesosDouble.add(str.getPeso());
-    }
-    for (int i = 0; i < datos.numeroCasos(); ++i) {
-    	aux.add(this.getDistanciaEuclidea(datos.getInstance(i).getVector(), nueva.getVector(), pesosDouble));
-    }
-    return aux;
-  }
+
+	public Vector getDistancias(Dataset datos, Instancia nueva) {
+		// Convertir pesos a array primitivo para mejor performance
+		double[] pesosArray = datos.getAtributos().stream()
+				.mapToDouble(Atributo::getPeso)
+				.toArray();
+
+		// Paralelización del cálculo de distancias
+		return IntStream.range(0, datos.numeroCasos())
+				.parallel()
+				.mapToObj(i -> {
+					Instancia instancia = datos.getInstance(i);
+					return getDistanciaEuclidea(
+							instancia.getVector(),
+							nueva.getVector(),
+							pesosArray
+					);
+				})
+				.collect(Vector::new, Vector::add, Vector::concat);
+	}
   
   public String getClase (List<Instancia> candidatos) {
 	  List<String> nombresClases = new ArrayList<>();
@@ -46,8 +53,14 @@ public class KNN {
   }
   
   public double getDistanciaEuclidea(Vector vieja, Vector nueva) {
-	  if (vieja.size()-1 != nueva.size()) {
-		  throw new IllegalArgumentException("Los vectores deben tener el mismo tamaño.");
+	  if (vieja == null || nueva == null) {
+		  throw new IllegalArgumentException("Los vectores no pueden ser nulos");
+	  }
+	  if (vieja.size() != nueva.size()) {
+		  throw new IllegalArgumentException(
+				  String.format("Tamaños de vectores no coinciden (%d != %d)",
+						  vieja.size(), nueva.size())
+		  );
 	  }
 	double dist = 0.0;
 	for(int i = 0; i < nueva.size(); i++) {
@@ -55,17 +68,25 @@ public class KNN {
 	}
 	return Math.sqrt(dist);
   }
-  
-  public double getDistanciaEuclidea(Vector vieja, Vector nueva, List<Double> pesos) {
-	  if (vieja.size()-1 != nueva.size()) {
-		  throw new IllegalArgumentException("Los vectores deben tener el mismo tamaño.");
-	  }
+
+	public double getDistanciaEuclidea(Vector vieja, Vector nueva, double[] pesos) {
+		if (pesos == null) {
+			throw new IllegalArgumentException("La lista de pesos no puede ser nula");
+		}
+		if (vieja.size()-1 != nueva.size()) {
+			throw new IllegalArgumentException(
+					String.format("Tamaños no coinciden (vieja: %d, nueva: %d, pesos: %d)",
+							vieja.size(), nueva.size(), pesos.length)
+			);
+		}
+
 		double dist = 0.0;
-		for(int i = 0; i < nueva.size(); i++) {
-			dist += Math.pow((vieja.get(i) - nueva.get(i))*pesos.get(i), 2);
+		for (int i = 0; i < nueva.size(); i++) {
+			double diff = (vieja.get(i) - nueva.get(i)) * pesos[i];
+			dist += diff * diff;
 		}
 		return Math.sqrt(dist);
-	  }
+	}
   
   public String getVecino(List<Instancia> candidatos, Vector distancias){
 	  Vector aux = new Vector();

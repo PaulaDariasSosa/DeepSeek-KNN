@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,24 +114,61 @@ public class Dataset {
 			atributos.set(i, aux);
 		}	
 	}
-	
+
 	public void add(List<String> nueva) {
-		for (int i = 0; i < atributos.size(); ++i) {
-			Atributo aux =  atributos.get(i);
-			try {
-				aux.add(Double.parseDouble(nueva.get(i)));
-    		} catch (NumberFormatException e) {
-    			aux.add(nueva.get(i));
-    		}
-			atributos.set(i, aux);
-		}	
+		if (nueva == null || nueva.isEmpty()) {
+			throw new IllegalArgumentException("La instancia no puede ser nula o vacía");
+		}
+		if (nueva.size() != numeroAtributos()) {
+			throw new IllegalArgumentException(
+					String.format("Se esperaban %d atributos, se recibieron %d",
+							numeroAtributos(), nueva.size())
+			);
+		}
+
+		try {
+			for (int i = 0; i < atributos.size(); ++i) {
+				Atributo aux = atributos.get(i);
+				String valor = nueva.get(i);
+				if (aux instanceof Cuantitativo) {
+					try {
+						aux.add(Double.parseDouble(valor));
+					} catch (NumberFormatException e) {
+						throw new IllegalArgumentException(
+								String.format("Valor no numérico para atributo cuantitativo %s: %s",
+										aux.getNombre(), valor), e);
+					}
+				} else {
+					aux.add(valor);
+				}
+			}
+		} catch (Exception e) {
+			// Revertir cambios si falla
+			for (Atributo attr : atributos) {
+				if (attr.size() > 0) {
+					attr.delete(attr.size() - 1);
+				}
+			}
+			throw e;
+		}
 	}
 	// Delete
-	public void delete(int nueva) {
-		for (int i = 0; i < atributos.size(); ++i) {
-			Atributo aux = atributos.get(i);
-			aux.delete(nueva);
-			atributos.set(i, aux);
+	public void delete(int index) {
+		if (atributos.isEmpty()) {
+			throw new IllegalStateException("No se puede eliminar: dataset vacío");
+		}
+		if (index < 0 || index >= numeroCasos()) {
+			throw new IndexOutOfBoundsException(
+					String.format("Índice %d fuera de rango (0-%d)", index, numeroCasos()-1)
+			);
+		}
+
+		try {
+			for (Atributo atributo : atributos) {
+				atributo.delete(index);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Error al eliminar instancia", e);
 		}
 	}
 	
@@ -209,10 +247,16 @@ public class Dataset {
 	
 	// numero casos
 	public int numeroCasos() {
+		if (atributos.isEmpty()) {
+			return 0;
+		}
 		return atributos.get(0).size();
 	}
 
-	public List<String> getValores(){
+	public List<String> getValores() {
+		if (atributos.isEmpty()) {
+			return Collections.emptyList();
+		}
 		ArrayList<String> valores = new ArrayList<String>();
 		 for (int i = 0; i < atributos.get(0).size(); ++i) {
 	        	for (int j = 0; j < atributos.size(); ++j) valores.add(String.valueOf(atributos.get(j).getValor(i)));
@@ -223,11 +267,23 @@ public class Dataset {
 	public Atributo get(int index) {
 		return atributos.get(index);
 	}
-	
-	public Instancia getInstance(int index){
-	 	ArrayList<Object> auxiliar = new ArrayList<>();
-		for (int i = 0; i < atributos.size(); ++i) auxiliar.add(atributos.get(i).getValor(index));
-		return new Instancia (auxiliar);
+
+	public Instancia getInstance(int index) {
+		if (atributos.isEmpty()) {
+			throw new IllegalStateException("El dataset está vacío. No se puede obtener instancias.");
+		}
+
+		if (index < 0 || index >= numeroCasos()) {
+			throw new IndexOutOfBoundsException(
+					String.format("Índice %d fuera de rango. El dataset contiene %d instancias.", index, numeroCasos())
+			);
+		}
+
+		ArrayList<Object> auxiliar = new ArrayList<>();
+		for (Atributo atributo : atributos) {
+			auxiliar.add(atributo.getValor(index));
+		}
+		return new Instancia(auxiliar);
 	}
 	
 	public List<String> getPesos() {
