@@ -172,22 +172,42 @@ public class Dataset {
 		}
 	}
 	// Delete
-	public void delete(int index) {
-		if (atributos.isEmpty()) {
-			throw new IllegalStateException("No se puede eliminar: dataset vacío");
-		}
-		if (index < 0 || index >= numeroCasos()) {
-			throw new IndexOutOfBoundsException(
-					String.format("Índice %d fuera de rango (0-%d)", index, numeroCasos()-1)
-			);
-		}
+	public void delete(int index) throws DatasetOperationException {
+		validateDeleteOperation(index);
 
 		try {
-			for (Atributo atributo : atributos) {
-				atributo.delete(index);
-			}
+			deleteInstanceFromAttributes(index);
 		} catch (Exception e) {
-			throw new RuntimeException("Error al eliminar instancia", e);
+			throw new DatasetOperationException("Error al eliminar instancia en índice: " + index, e);
+		}
+	}
+
+	private void validateDeleteOperation(int index) {
+		if (atributos.isEmpty()) {
+			throw new DatasetOperationException("No se puede eliminar: dataset vacío");
+		}
+		if (index < 0 || index >= numeroCasos()) {
+			throw new DatasetOperationException(
+					String.format("Índice %d fuera de rango válido (0-%d)",
+							index, numeroCasos()-1)
+			);
+		}
+	}
+
+	private void deleteInstanceFromAttributes(int index) {
+		for (Atributo atributo : atributos) {
+			atributo.delete(index);
+		}
+	}
+
+	// Dedicated exception class
+	public class DatasetOperationException extends RuntimeException {
+		public DatasetOperationException(String message) {
+			super(message);
+		}
+
+		public DatasetOperationException(String message, Throwable cause) {
+			super(message, cause);
 		}
 	}
 	
