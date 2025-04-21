@@ -116,6 +116,17 @@ public class Dataset {
 	}
 
 	public void add(List<String> nueva) {
+		validateNewInstance(nueva);
+
+		try {
+			addAttributes(nueva);
+		} catch (Exception e) {
+			rollbackChanges();
+			throw e;
+		}
+	}
+
+	private void validateNewInstance(List<String> nueva) {
 		if (nueva == null || nueva.isEmpty()) {
 			throw new IllegalArgumentException("La instancia no puede ser nula o vacía");
 		}
@@ -125,31 +136,39 @@ public class Dataset {
 							numeroAtributos(), nueva.size())
 			);
 		}
+	}
 
+	private void addAttributes(List<String> nueva) {
+		for (int i = 0; i < atributos.size(); ++i) {
+			Atributo aux = atributos.get(i);
+			String valor = nueva.get(i);
+			addAttributeValue(aux, valor);
+		}
+	}
+
+	private void addAttributeValue(Atributo atributo, String valor) {
+		if (atributo instanceof Cuantitativo) {
+			addQuantitativeValue((Cuantitativo) atributo, valor);
+		} else {
+			atributo.add(valor);
+		}
+	}
+
+	private void addQuantitativeValue(Cuantitativo atributo, String valor) {
 		try {
-			for (int i = 0; i < atributos.size(); ++i) {
-				Atributo aux = atributos.get(i);
-				String valor = nueva.get(i);
-				if (aux instanceof Cuantitativo) {
-					try {
-						aux.add(Double.parseDouble(valor));
-					} catch (NumberFormatException e) {
-						throw new IllegalArgumentException(
-								String.format("Valor no numérico para atributo cuantitativo %s: %s",
-										aux.getNombre(), valor), e);
-					}
-				} else {
-					aux.add(valor);
-				}
+			atributo.add(Double.parseDouble(valor));
+		} catch (NumberFormatException e) {
+			throw new IllegalArgumentException(
+					String.format("Valor no numérico para atributo cuantitativo %s: %s",
+							atributo.getNombre(), valor), e);
+		}
+	}
+
+	private void rollbackChanges() {
+		for (Atributo attr : atributos) {
+			if (attr.size() > 0) {
+				attr.delete(attr.size() - 1);
 			}
-		} catch (Exception e) {
-			// Revertir cambios si falla
-			for (Atributo attr : atributos) {
-				if (attr.size() > 0) {
-					attr.delete(attr.size() - 1);
-				}
-			}
-			throw e;
 		}
 	}
 	// Delete

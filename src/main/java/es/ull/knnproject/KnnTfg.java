@@ -103,20 +103,22 @@ public class KnnTfg  {
 	}
 
 	private static void mostrarMenu() {
-		System.out.println("\n=== MENÚ PRINCIPAL ===");
-		System.out.println(" 1. Cargar dataset");
-		System.out.println(" 2. Guardar dataset");
-		System.out.println(" 3. Modificar dataset");
-		System.out.println(" 4. Mostrar información");
-		System.out.println(" 5. Realizar experimentación");
-		System.out.println(" 6. Clasificar instancia");
-		System.out.println(" 7. Salir");
-		System.out.print("Seleccione una opción: ");
+		logger.info("\n=== MENÚ PRINCIPAL ===");
+		logger.info(" 1. Cargar dataset");
+		logger.info(" 2. Guardar dataset");
+		logger.info(" 3. Modificar dataset");
+		logger.info(" 4. Mostrar información");
+		logger.info(" 5. Realizar experimentación");
+		logger.info(" 6. Clasificar instancia");
+		logger.info(" 7. Salir");
+		logger.info("Seleccione una opción: ");
 	}
 
 	private static void mostrarFeedback(String mensaje, boolean exito) {
 		String color = exito ? "\033[32m" : "\033[31m"; // Verde o rojo
-		System.out.println(color + "> " + mensaje + "\033[0m");
+		if (logger.isInfoEnabled()) {
+			logger.info("{}> {}\u001B[0m", color, mensaje);
+		}
 	}
 
 	private static Dataset[] cargarDataset(String filePath) throws IOException {
@@ -221,7 +223,9 @@ public class KnnTfg  {
 						}
 						break;
 					case 2:
-						logger.info(ruta);
+						if(logger.isInfoEnabled()) {
+							logger.info(ruta);
+						}
 						break;
 					case 3:
 						logger.info("Introduzca la nueva ruta: ");
@@ -365,7 +369,9 @@ public class KnnTfg  {
 
 			switch(opcion) {
 				case 1:
-					logger.info("Introduce los pesos separados por comas ({} valores entre 0 y 1):", data.numeroAtributos());
+					if (logger.isInfoEnabled()){
+						logger.info("Introduce los pesos separados por comas ({} valores entre 0 y 1):", data.numeroAtributos());
+					}
 					String valores = scanner.nextLine();
 					String[] subcadenas = valores.split(",");
 
@@ -409,7 +415,9 @@ public class KnnTfg  {
 					break;
 
 				case 3:
-					logger.info("Índice del atributo a modificar (0-{}):", data.numeroAtributos()-1);
+					if (logger.isInfoEnabled()){
+						logger.info("Índice del atributo a modificar (0-{}):", data.numeroAtributos()-1);
+					}
 					try {
 						int indice = scanner.nextInt();
 						if (indice < 0 || indice >= data.numeroAtributos()) {
@@ -465,7 +473,9 @@ public class KnnTfg  {
 								logger.error("Índice fuera de rango. Debe estar entre 0 y {}", data.numeroCasos()-1);
 								break;
 							}
-							logger.info(data.getInstance(valor).toString());
+							if (logger.isInfoEnabled()) {
+								logger.info(data.getInstance(valor).toString());
+							}
 						} catch (InputMismatchException e) {
 							logger.error("Debe ingresar un número entero válido");
 							scanner.nextLine(); // Limpiar buffer
