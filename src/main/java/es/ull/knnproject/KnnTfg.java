@@ -28,7 +28,7 @@ public class KnnTfg  {
 	public static final String MENSAJE_INDICE_FUERA_RANGO = "Índice fuera de rango. Debe estar entre 0 y {}";
 	public static final String MENSAJE_INGRESAR_NUMERO = "Debe ingresar un número entero válido";
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		AppContext context = new AppContext();
 		Scanner scanner = new Scanner(System.in);
 
@@ -59,7 +59,7 @@ public class KnnTfg  {
 			logger.error("Entrada inválida. Debe ingresar un número.");
 			scanner.nextLine(); // Limpiar entrada incorrecta
 		} catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error al guardar el dataset", e);
         }
     }
 
