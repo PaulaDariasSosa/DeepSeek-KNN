@@ -40,28 +40,55 @@ public class KnnTfg  {
 		scanner.close();
 	}
 
+	/**
+	 * Procesa la opción seleccionada por el usuario en el menú principal.
+	 *
+	 * @param context Contexto de la aplicación con los datos actuales
+	 * @param scanner Scanner para leer la entrada del usuario
+	 * @throws DatasetOperationException Si ocurre un error al operar con el dataset
+	 * @throws IllegalArgumentException Si los parámetros son nulos
+	 */
 	private static void procesarOpcion(AppContext context, Scanner scanner) {
+		if (context == null || scanner == null) {
+			throw new IllegalArgumentException("Contexto y scanner no pueden ser nulos");
+		}
+
 		try {
 			int opcion = scanner.nextInt();
 			scanner.nextLine(); // Limpiar buffer
 
 			switch (opcion) {
-				case 1: cargarDataset(context, scanner); break;
-				case 2: guardarDataset(context.datos, context.ruta); break;
-				case 3: context.datos = modify(context.datos); break;
-				case 4: info(context.datos); break;
-				case 5: experimentar(context.datos); break;
-				case 6: ejecutarKNN(context.datosCrudos, context.datos, scanner); break;
-				case 7: context.salida = true; break;
-				default: logger.info("Opción no válida.");
+				case 1:
+					cargarDataset(context, scanner);
+					break;
+				case 2:
+					guardarDataset(context.datos, context.ruta);
+					break;
+				case 3:
+					context.datos = modify(context.datos);
+					break;
+				case 4:
+					info(context.datos, scanner);
+					break;
+				case 5:
+					experimentar(context.datos);
+					break;
+				case 6:
+					ejecutarKNN(context.datosCrudos, context.datos, scanner);
+					break;
+				case 7:
+					context.salida = true;
+					break;
+				default:
+					logger.warn("Opción no válida seleccionada: {}", opcion);
 			}
 		} catch (InputMismatchException e) {
 			logger.error("Entrada inválida. Debe ingresar un número.");
 			scanner.nextLine(); // Limpiar entrada incorrecta
 		} catch (IOException e) {
-            throw new RuntimeException("Error al guardar el dataset", e);
-        }
-    }
+			throw new DatasetOperationException("Error al guardar el dataset: " + e.getMessage(), e);
+		}
+	}
 
 	private static void cargarDataset(AppContext context, Scanner scanner) {
 		logger.info("Introduzca la ruta completa del archivo: ");
@@ -534,68 +561,78 @@ public class KnnTfg  {
 		return parsearPeso(String.valueOf(peso));
 	}
 
-	public static void info(Dataset data) {
-		if (data == null || data.numeroCasos() == 0) {
+	public static void info(Dataset data, Scanner scanner) {
+		if (isDatasetInvalid(data)) {
 			logger.error("No hay dataset cargado o está vacío");
 			return;
 		}
 
-		int opcion = -1;
-		Scanner scanner = new Scanner(System.in);
+		try {
+			int opcion;
+			do {
+				mostrarMenuInformacion();
+				opcion = procesarOpcionInfo(data, scanner);
+			} while (opcion != 6);
+		} catch (InputMismatchException e) {
+			logger.error("Error: Debe ingresar un número válido");
+			scanner.nextLine(); // Limpiar entrada inválida
+		}
+    }
 
-		while (opcion != 6) {
-			mostrarMenuInformacion();
+	private static boolean isDatasetInvalid(Dataset data) {
+		return data == null || data.numeroCasos() == 0;
+	}
 
-			try {
-				opcion = scanner.nextInt();
-				scanner.nextLine(); // Limpiar buffer
+	private static int procesarOpcionInfo(Dataset data, Scanner scanner) {
+		try {
+			int opcion = scanner.nextInt();
+			scanner.nextLine(); // Limpiar buffer
 
-				switch(opcion) {
-					case 1:
-						data.print();
-						break;
-					case 2:
-						logger.info("Introduce el índice de la instancia a mostrar: ");
-						try {
-							int valor = scanner.nextInt();
-							if (valor < 0 || valor >= data.numeroCasos()) {
-								logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroCasos()-1);
-								break;
-							}
-							if (logger.isInfoEnabled()) {
-								logger.info(data.getInstance(valor).toString());
-							}
-						} catch (InputMismatchException e) {
-							logger.error(MENSAJE_INGRESAR_NUMERO);
-							scanner.nextLine(); // Limpiar buffer
-						}
-						break;
-					case 3:
-						infoCuantitativo(data);
-						break;
-					case 4:
-						infoCualitativo(data);
-						break;
-					case 5:
-						StringBuilder nombre = new StringBuilder();
-						for(String peso: data.getPesos()) {
-							nombre.append(peso);
-							nombre.append(" ");
-						}
-						if (logger.isInfoEnabled()) {
-							logger.info(nombre.toString());
-						}
-						break;
-					case 6:
-						logger.info("Volviendo al menú principal");
-						break;
-					default:
-						logger.warn("Opción {} no reconocida. Por favor ingrese un número entre 1 y 6", opcion);
-				}
-			} catch (InputMismatchException e) {
-				logger.error("Entrada inválida: debe ser un número");
-				scanner.nextLine(); // Limpiar buffer
+			switch(opcion) {
+				case 1: handlePrintDataset(data); break;
+				case 2: handleShowInstance(data, scanner); break;
+				case 3: infoCuantitativo(data, scanner); break;
+				case 4: infoCualitativo(data); break;
+				case 5: handleShowWeights(data); break;
+				case 6: logger.info("Volviendo al menú principal"); break;
+				default: logger.warn("Opción {} no reconocida. Ingrese 1-6", opcion);
 			}
+			return opcion;
+		} catch (InputMismatchException e) {
+			logger.error("Entrada inválida: debe ser un número");
+			scanner.nextLine(); // Limpiar buffer
+			return -1;
+		}
+	}
+
+	private static void handlePrintDataset(Dataset data) {
+		data.print();
+	}
+
+	private static void handleShowInstance(Dataset data, Scanner scanner) {
+		logger.info("Introduce el índice de la instancia a mostrar: ");
+		try {
+			int valor = scanner.nextInt();
+			if (valor < 0 || valor >= data.numeroCasos()) {
+				logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroCasos()-1);
+				return;
+			}
+			if (logger.isInfoEnabled()) {
+				logger.info(data.getInstance(valor).toString());
+			}
+		} catch (InputMismatchException e) {
+			logger.error(MENSAJE_INGRESAR_NUMERO);
+			scanner.nextLine(); // Limpiar buffer
+		}
+	}
+
+	private static void handleShowWeights(Dataset data) {
+		StringBuilder nombre = new StringBuilder();
+		for(String peso: data.getPesos()) {
+			nombre.append(peso).append(" ");
+		}
+		if (logger.isInfoEnabled()) {
+			logger.info(nombre.toString());
 		}
 	}
 
@@ -610,7 +647,30 @@ public class KnnTfg  {
 		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
-	public static void infoCuantitativo(Dataset data) {
+	public static void infoCuantitativo(Dataset data, Scanner mainScanner) {
+		mostrarMenuCuantitativo();
+
+		try {
+			int opcion = mainScanner.nextInt();
+			mainScanner.nextLine(); // Limpiar buffer
+
+			if (opcion < 1 || opcion > 5) {
+				logger.warn("Opción no válida: {}. Por favor seleccione 1-5", opcion);
+				return;
+			}
+
+			if (opcion == 5) {
+				procesarDesviacionTipica(data, mainScanner);
+			} else {
+				procesarOpcionGeneral(data, mainScanner, opcion);
+			}
+		} catch (InputMismatchException e) {
+			logger.error("Error: Debe ingresar un número válido");
+			mainScanner.nextLine(); // Limpiar entrada inválida
+		}
+	}
+
+	private static void mostrarMenuCuantitativo() {
 		logger.info("\n=== INFORMACIÓN CUANTITATIVA ===");
 		logger.info("1. Mostrar nombre");
 		logger.info("2. Mostrar media");
@@ -618,42 +678,45 @@ public class KnnTfg  {
 		logger.info("4. Mostrar mínimo");
 		logger.info("5. Mostrar desviación típica");
 		logger.info("Seleccione una opción (1-5): ");
+	}
 
+	private static int obtenerOpcionUsuario(Scanner scanner) throws InputMismatchException {
+		return scanner.nextInt();
+	}
+
+	private static void procesarDesviacionTipica(Dataset data, Scanner scanner) {
+		logger.info("Introduce el índice del atributo cuantitativo: ");
 		try {
-			Scanner scanner = new Scanner(System.in);
-			int opcion = scanner.nextInt();
-
-			switch(opcion) {
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-					logger.info("Introduce el índice del atributo cuantitativo: ");
-					int valor = scanner.nextInt();
-					mostrarInfoAtributo(data, valor, opcion);
-					break;
-
-				case 5:
-					logger.info("Introduce el índice del atributo cuantitativo: ");
-					try {
-						valor = scanner.nextInt();
-						if (valor < 0 || valor >= data.numeroAtributos()) {
-							logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroAtributos()-1);
-							break;
-						}
-						procesarOpcionCuantitativa(data, valor, opcion);
-					} catch (InputMismatchException e) {
-						logger.error(MENSAJE_INGRESAR_NUMERO);
-						scanner.nextLine();
-					}
-					break;
-
-				default:
-					logger.warn("Opción no válida: {}. Por favor seleccione una opción entre 1 y 5", opcion);
-					break;
+			int valor = scanner.nextInt();
+			scanner.nextLine(); // Limpiar buffer
+			if (valor < 0 || valor >= data.numeroAtributos()) {
+				logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroAtributos()-1);
+				return;
 			}
+			procesarOpcionCuantitativa(data, valor, 5);
 		} catch (InputMismatchException e) {
-			logger.error("Error: Debe ingresar un número válido");
+			logger.error(MENSAJE_INGRESAR_NUMERO);
+			scanner.nextLine();
+		}
+	}
+
+	private static void procesarOpcionGeneral(Dataset data, Scanner scanner, int opcion) {
+		logger.info("Introduce el índice del atributo cuantitativo: ");
+		try {
+			int valor = scanner.nextInt();
+			scanner.nextLine(); // Limpiar buffer
+			mostrarInfoAtributo(data, valor, opcion);
+		} catch (InputMismatchException e) {
+			logger.error(MENSAJE_INGRESAR_NUMERO);
+			scanner.nextLine();
+		}
+	}
+
+	private static void validarIndiceAtributo(Dataset data, int valor) {
+		if (valor < 0 || valor >= data.numeroAtributos()) {
+			throw new IllegalArgumentException(
+					String.format("Índice fuera de rango (0-%d)", data.numeroAtributos()-1)
+			);
 		}
 	}
 
