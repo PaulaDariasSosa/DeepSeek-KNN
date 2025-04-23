@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,81 +23,92 @@ public class KnnTfg  {
 	public static final String MENSAJE_INTRODUCIR_VALORES = "Introduce los valores: ";
 	public static final String MENSAJE_CONJUNTO_ENTRENAMIENTO = "Introduzca el porcentaje para el conjunto de entrenamiento";
 	public static final String MENSAJE_RESULTADOS_TXT = "resultados.txt";
+	public static final String MENSAJE_SELECCIONE_OPCION =  "Seleccione una opción: ";
+	public static final String MENSAJE_OPCION_NO_VALIDA = "Opción no válida";
+	public static final String MENSAJE_INDICE_FUERA_RANGO = "Índice fuera de rango. Debe estar entre 0 y {}";
+	public static final String MENSAJE_INGRESAR_NUMERO = "Debe ingresar un número entero válido";
 
 	public static void main(String[] args) throws IOException {
+		AppContext context = new AppContext();
+		Scanner scanner = new Scanner(System.in);
+
+		while (!context.salida) {
+			mostrarMenu();
+			procesarOpcion(context, scanner);
+		}
+
+		scanner.close();
+	}
+
+	private static void procesarOpcion(AppContext context, Scanner scanner) {
+		try {
+			int opcion = scanner.nextInt();
+			scanner.nextLine(); // Limpiar buffer
+
+			switch (opcion) {
+				case 1: cargarDataset(context, scanner); break;
+				case 2: guardarDataset(context.datos, context.ruta); break;
+				case 3: context.datos = modify(context.datos); break;
+				case 4: info(context.datos); break;
+				case 5: experimentar(context.datos); break;
+				case 6: ejecutarKNN(context.datosCrudos, context.datos, scanner); break;
+				case 7: context.salida = true; break;
+				default: logger.info("Opción no válida.");
+			}
+		} catch (InputMismatchException e) {
+			logger.error("Entrada inválida. Debe ingresar un número.");
+			scanner.nextLine(); // Limpiar entrada incorrecta
+		} catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+	private static void cargarDataset(AppContext context, Scanner scanner) {
+		logger.info("Introduzca la ruta completa del archivo: ");
+		String filePath = scanner.nextLine();
+
+		if (!validarArchivo(filePath)) {
+			return;
+		}
+
+		try {
+			Dataset[] datasets = cargarDataset(filePath);
+			context.datosCrudos = datasets[0];
+			context.datos = datasets[1];
+			mostrarFeedback("Dataset cargado correctamente con " + context.datos.numeroCasos() + " instancias", true);
+		} catch (IOException e) {
+			mostrarFeedback("Error al cargar el archivo: " + e.getMessage(), false);
+		} catch (Exception e) {
+			logger.error("Formato de archivo incorrecto: {}", e.getMessage());
+		}
+	}
+
+	private static boolean validarArchivo(String filePath) {
+		File file = new File(filePath);
+
+		if (!file.exists()) {
+			logger.error("El archivo no existe: {}", filePath);
+			return false;
+		}
+
+		if (!file.canRead()) {
+			logger.error("No se puede leer el archivo: {}", filePath);
+			return false;
+		}
+
+		if (!filePath.toLowerCase().endsWith(".csv")) {
+			logger.warn("El archivo no tiene extensión .csv, puede que no funcione correctamente");
+		}
+
+		return true;
+	}
+
+	// Clase para mantener el estado de la aplicación
+	private static class AppContext {
 		String ruta = "";
 		boolean salida = false;
 		Dataset datosCrudos = new Dataset();
 		Dataset datos = new Dataset();
-		Scanner scanner = new Scanner(System.in);
-
-		while (!salida) {
-			mostrarMenu();
-
-			try {
-				int opcion = scanner.nextInt();
-				scanner.nextLine(); // Limpiar buffer
-
-				switch (opcion) {
-					case 1:
-						logger.info("Introduzca la ruta completa del archivo: ");
-						String filePath = scanner.nextLine();
-						File file = new File(filePath);
-
-						if (!file.exists()) {
-							logger.error("El archivo no existe: {}", filePath);
-							break;
-						}
-
-						if (!file.canRead()) {
-							logger.error("No se puede leer el archivo: {}", filePath);
-							break;
-						}
-
-						// Verificar extensión .csv
-						if (!filePath.toLowerCase().endsWith(".csv")) {
-							logger.warn("El archivo no tiene extensión .csv, puede que no funcione correctamente");
-						}
-
-						try {
-							Dataset[] datasets = cargarDataset(filePath);
-							datosCrudos = datasets[0];
-							datos = datasets[1];
-							mostrarFeedback("Dataset cargado correctamente con " + datos.numeroCasos() + " instancias", true);
-						} catch (IOException e) {
-							mostrarFeedback("Error al cargar el archivo: " + e.getMessage(), false);
-						} catch (Exception e) {
-							logger.error("Formato de archivo incorrecto: {}", e.getMessage());
-						}
-						break;
-
-					case 2:
-						guardarDataset(datos, ruta);
-						break;
-					case 3:
-						datos = modify(datos);
-						break;
-					case 4:
-						info(datos);
-						break;
-					case 7:
-						salida = true;
-						break;
-					case 5:
-						experimentar(datos);
-						break;
-					case 6:
-						ejecutarKNN(datosCrudos, datos, scanner);
-						break;
-					default:
-						logger.info("Opción no válida.");
-				}
-			} catch (InputMismatchException e) {
-				logger.error("Entrada inválida. Debe ingresar un número.");
-				scanner.nextLine(); // Limpiar entrada incorrecta
-			}
-		}
-		scanner.close();
 	}
 
 	private static void mostrarMenu() {
@@ -112,7 +120,7 @@ public class KnnTfg  {
 		logger.info(" 5. Realizar experimentación");
 		logger.info(" 6. Clasificar instancia");
 		logger.info(" 7. Salir");
-		logger.info("Seleccione una opción: ");
+		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
 	private static void mostrarFeedback(String mensaje, boolean exito) {
@@ -184,63 +192,117 @@ public class KnnTfg  {
 	}
 
 	public static String readFile(String ruta) {
-		int opcion = 2;
-		String archivo = "";
+		FileReaderContext context = new FileReaderContext(ruta);
 		Scanner scanner = new Scanner(System.in);
 
-		while (opcion != 4) {
-			logger.info("Se debe especificar la ruta y nombre del archivo: ");
-			logger.info("       [1] Introducir nombre");
-			logger.info("       [2] Mostrar ruta ");
-			logger.info("       [3] Cambiar ruta ");
-			logger.info("       [4] Salir ");
-
-			try {
-				opcion = scanner.nextInt();
-				scanner.nextLine(); // Limpiar buffer
-
-				switch(opcion) {
-					case 1:
-						logger.info("Introduzca el nombre del archivo: ");
-						archivo = scanner.nextLine();
-						try {
-							Path filePath = Paths.get(ruta + archivo);
-							// Validaciones adicionales
-							if (!Files.exists(filePath)) {
-								logger.error("El archivo no existe");
-							}
-							if (!Files.isReadable(filePath)) {
-								logger.error("No se tienen permisos de lectura");
-							}
-							if (Files.size(filePath) == 0) {
-								logger.error("El archivo está vacío");
-							}
-						} catch (IOException e) {
-							logger.error("Error al validar el archivo: {}", e.getMessage());
-						}
-						break;
-					case 2:
-						if(logger.isInfoEnabled()) {
-							logger.info(ruta);
-						}
-						break;
-					case 3:
-						logger.info("Introduzca la nueva ruta: ");
-						String nuevaRuta = scanner.nextLine();
-						if (!nuevaRuta.endsWith(File.separator)) {
-							nuevaRuta += File.separator;
-						}
-						ruta = nuevaRuta;
-						break;
-					default:
-						logger.info("Opción no válida");
-				}
-			} catch (InputMismatchException e) {
-				logger.error("Entrada inválida. Debe ingresar un número.");
-				scanner.nextLine(); // Limpiar entrada incorrecta
-			}
+		while (!context.shouldExit()) {
+			mostrarMenuArchivo();
+			procesarOpcionArchivo(context, scanner);
 		}
-		return archivo;
+
+		return context.getArchivo();
+	}
+
+	private static class FileReaderContext {
+		private String ruta;
+		private String archivo = "";
+		private boolean shouldExit = false;
+
+		public FileReaderContext(String ruta) {
+			this.ruta = ruta;
+		}
+
+		public boolean shouldExit() {
+			return shouldExit;
+		}
+
+		public String getArchivo() {
+			return archivo;
+		}
+
+		public void setArchivo(String archivo) {
+			this.archivo = archivo;
+		}
+
+		public void setRuta(String ruta) {
+			this.ruta = ruta;
+		}
+
+		public String getRuta() {
+			return ruta;
+		}
+
+		public void exit() {
+			this.shouldExit = true;
+		}
+	}
+
+	private static void mostrarMenuArchivo() {
+		logger.info("Se debe especificar la ruta y nombre del archivo: ");
+		logger.info("       [1] Introducir nombre");
+		logger.info("       [2] Mostrar ruta ");
+		logger.info("       [3] Cambiar ruta ");
+		logger.info("       [4] Salir ");
+	}
+
+	private static void procesarOpcionArchivo(FileReaderContext context, Scanner scanner) {
+		try {
+			int opcion = scanner.nextInt();
+			scanner.nextLine(); // Limpiar buffer
+
+			switch(opcion) {
+				case 1: procesarOpcionNombreArchivo(context, scanner); break;
+				case 2: mostrarRutaActual(context); break;
+				case 3: cambiarRuta(context, scanner); break;
+				case 4: context.exit(); break;
+				default: logger.info(MENSAJE_OPCION_NO_VALIDA);
+			}
+		} catch (InputMismatchException e) {
+			logger.error("Entrada inválida. Debe ingresar un número.");
+			scanner.nextLine(); // Limpiar entrada incorrecta
+		}
+	}
+
+	private static void procesarOpcionNombreArchivo(FileReaderContext context, Scanner scanner) {
+		logger.info("Introduzca el nombre del archivo: ");
+		String nombreArchivo = scanner.nextLine();
+		validarArchivoRead(context.getRuta() + nombreArchivo);
+		context.setArchivo(nombreArchivo);
+	}
+
+	private static void validarArchivoRead(String pathCompleto) {
+		try {
+			Path filePath = Paths.get(pathCompleto);
+
+			if (!Files.exists(filePath)) {
+				logger.error("El archivo no existe");
+				return;
+			}
+			if (!Files.isReadable(filePath)) {
+				logger.error("No se tienen permisos de lectura");
+				return;
+			}
+			if (Files.size(filePath) == 0) {
+				logger.error("El archivo está vacío");
+			}
+		} catch (IOException e) {
+			logger.error("Error al validar el archivo: {}", e.getMessage());
+		}
+	}
+
+	private static void mostrarRutaActual(FileReaderContext context) {
+		if (logger.isInfoEnabled()) {
+			logger.info(context.getRuta());
+		}
+	}
+
+	private static void cambiarRuta(FileReaderContext context, Scanner scanner) {
+		logger.info("Introduzca la nueva ruta: ");
+		String nuevaRuta = scanner.nextLine();
+		if (!nuevaRuta.endsWith(File.separator)) {
+			nuevaRuta += File.separator;
+		}
+		context.setRuta(nuevaRuta);
 	}
 
 	private static void mostrarMenuModificacion() {
@@ -250,7 +312,7 @@ public class KnnTfg  {
 		logger.info("3. Modificar instancia");
 		logger.info("4. Cambiar peso de atributos");
 		logger.info("5. Volver al menú principal");
-		logger.info("Seleccione una opción: ");
+		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
 	public static Dataset modify(Dataset data) {
@@ -287,7 +349,7 @@ public class KnnTfg  {
 						logger.warn("Opción no válida: {}. Por favor ingrese un número entre 1 y 5", opcion);
 				}
 			} catch (InputMismatchException e) {
-				logger.error("Opción no válida");
+				logger.error(MENSAJE_OPCION_NO_VALIDA);
 				scanner.nextLine(); // Limpiar buffer
 			}
 		}
@@ -313,12 +375,12 @@ public class KnnTfg  {
 			int valor = scanner.nextInt();
 			scanner.nextLine(); // Limpiar buffer
 			if (valor < 0 || valor >= data.numeroCasos()) {
-				logger.error("Índice fuera de rango. Debe estar entre 0 y {}", data.numeroCasos()-1);
+				logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroCasos()-1);
 				return;
 			}
 			data.delete(valor);
 		} catch (InputMismatchException e) {
-			logger.error("Debe ingresar un número entero válido");
+			logger.error(MENSAJE_INGRESAR_NUMERO);
 			scanner.nextLine(); // Limpiar buffer
 		}
 	}
@@ -354,92 +416,122 @@ public class KnnTfg  {
 		return data;
 	}
 
-	public static Dataset cambiarPesos(Dataset data) {
-		logger.info("           [1] Asignar pesos distintos a todos los atributos");
-		logger.info("           [2] Mismo peso para todos los atributos");
-		logger.info("           [3] Cambiar peso un atributo");
+	private static void mostrarMenuPesos() {
+		logger.info("=== MENÚ DE PESOS ===");
+		logger.info("1. Asignar pesos distintos a todos los atributos");
+		logger.info("2. Mismo peso para todos los atributos");
+		logger.info("3. Cambiar peso de un atributo específico");
+	}
 
+	public static Dataset cambiarPesos(Dataset data) {
+		mostrarMenuPesos();
 		Scanner scanner = new Scanner(System.in);
+
 		try {
 			int opcion = scanner.nextInt();
 			scanner.nextLine(); // Limpiar buffer
 
 			switch(opcion) {
-				case 1:
-					if (logger.isInfoEnabled()){
-						logger.info("Introduce los pesos separados por comas ({} valores entre 0 y 1):", data.numeroAtributos());
-					}
-					String valores = scanner.nextLine();
-					String[] subcadenas = valores.split(",");
-
-					// Validar cantidad de pesos
-					if (subcadenas.length != data.numeroAtributos()) {
-						logger.error("Debe ingresar exactamente {} pesos", data.numeroAtributos());
-						return data;
-					}
-
-					// Validar formato y rango de pesos
-					ArrayList<String> pesosValidos = new ArrayList<>();
-					for (String pesoStr : subcadenas) {
-						try {
-							double peso = Double.parseDouble(pesoStr.trim());
-							if (peso < 0 || peso > 1) {
-								logger.error("Los pesos deben estar entre 0 y 1. Valor inválido: {}", pesoStr);
-								return data;
-							}
-							pesosValidos.add(pesoStr.trim());
-						} catch (NumberFormatException e) {
-							logger.error("Valor no numérico detectado: {}", pesoStr);
-							return data;
-						}
-					}
-					data.cambiarPeso(pesosValidos);
-					break;
-
-				case 2:
-					logger.info("Peso para asignar a todos los atributos (0-1):");
-					try {
-						double pesoGlobal = scanner.nextDouble();
-						if (pesoGlobal < 0 || pesoGlobal > 1) {
-							logger.error("El peso debe estar entre 0 y 1");
-							return data;
-						}
-						data.cambiarPeso(pesoGlobal);
-					} catch (InputMismatchException e) {
-						logger.error("Debe ingresar un número válido entre 0 y 1");
-						scanner.nextLine(); // Limpiar buffer
-					}
-					break;
-
-				case 3:
-					if (logger.isInfoEnabled()){
-						logger.info("Índice del atributo a modificar (0-{}):", data.numeroAtributos()-1);
-					}
-					try {
-						int indice = scanner.nextInt();
-						if (indice < 0 || indice >= data.numeroAtributos()) {
-							logger.error("Índice fuera de rango válido");
-							return data;
-						}
-
-						logger.info("Nuevo peso (0-1):");
-						double nuevoPeso = scanner.nextDouble();
-						if (nuevoPeso < 0 || nuevoPeso > 1) {
-							logger.error("El peso debe estar entre 0 y 1");
-							return data;
-						}
-						data.cambiarPeso(indice, nuevoPeso);
-					} catch (InputMismatchException e) {
-						logger.error("Debe ingresar valores numéricos válidos");
-						scanner.nextLine(); // Limpiar buffer
-					}
-					break;
+				case 1: return cambiarPesosIndividuales(data, scanner);
+				case 2: return cambiarPesoGlobal(data, scanner);
+				case 3: return cambiarPesoAtributo(data, scanner);
+				default: logger.error(MENSAJE_OPCION_NO_VALIDA);
 			}
 		} catch (InputMismatchException e) {
-			logger.error("Opción no válida");
+			logger.error(MENSAJE_OPCION_NO_VALIDA);
 			scanner.nextLine(); // Limpiar buffer
 		}
+
 		return data;
+	}
+
+	private static Dataset cambiarPesosIndividuales(Dataset data, Scanner scanner) {
+		logger.info("Introduce los pesos separados por comas ({} valores entre 0 y 1):", data.numeroAtributos());
+		String valores = scanner.nextLine();
+
+		List<String> pesosValidos = validarPesos(data, valores);
+		if (!pesosValidos.isEmpty()) {
+			data.cambiarPeso(pesosValidos);
+		}
+
+		return data;
+	}
+
+	private static List<String> validarPesos(Dataset data, String valores) {
+		String[] subcadenas = valores.split(",");
+		List<String> pesosValidos = new ArrayList<>();
+
+		if (subcadenas.length != data.numeroAtributos()) {
+			logger.error("Debe ingresar exactamente {} pesos", data.numeroAtributos());
+			return pesosValidos;
+		}
+
+		for (String pesoStr : subcadenas) {
+			try {
+				double peso = Double.parseDouble(pesoStr.trim());
+				if (peso < 0 || peso > 1) {
+					logger.error("Los pesos deben estar entre 0 y 1. Valor inválido: {}", pesoStr);
+					return new ArrayList<>();
+				}
+				pesosValidos.add(pesoStr.trim());
+			} catch (NumberFormatException e) {
+				logger.error("Valor no numérico detectado: {}", pesoStr);
+				return new ArrayList<>();
+			}
+		}
+
+		return pesosValidos;
+	}
+
+	private static Dataset cambiarPesoGlobal(Dataset data, Scanner scanner) {
+		try {
+			double pesoGlobal = leerPesoValido(scanner);
+			if (pesoGlobal >= 0) {
+				data.cambiarPeso(pesoGlobal);
+			}
+		} catch (InputMismatchException e) {
+			logger.error("Debe ingresar un número válido entre 0 y 1");
+			scanner.nextLine();
+		}
+
+		return data;
+	}
+
+	private static Dataset cambiarPesoAtributo(Dataset data, Scanner scanner) {
+		try {
+			logger.info("Índice del atributo a modificar (0-{}):", data.numeroAtributos()-1);
+			int indice = scanner.nextInt();
+
+			if (indice < 0 || indice >= data.numeroAtributos()) {
+				logger.error("Índice fuera de rango válido");
+				return data;
+			}
+
+			logger.info("Nuevo peso (0-1):");
+			double nuevoPeso = leerPesoValido(scanner);
+			if (nuevoPeso >= 0) {
+				data.cambiarPeso(indice, nuevoPeso);
+			}
+		} catch (InputMismatchException e) {
+			logger.error("Debe ingresar valores numéricos válidos");
+			scanner.nextLine();
+		}
+
+		return data;
+	}
+
+	private static double parsearPeso(String pesoStr) throws NumberFormatException {
+		double peso = Double.parseDouble(pesoStr);
+		if (peso < 0 || peso > 1) {
+			logger.error("Los pesos deben estar entre 0 y 1. Valor inválido: {}", pesoStr);
+			return -1;
+		}
+		return peso;
+	}
+
+	private static double leerPesoValido(Scanner scanner) {
+		double peso = scanner.nextDouble();
+		return parsearPeso(String.valueOf(peso));
 	}
 
 	public static void info(Dataset data) {
@@ -467,14 +559,14 @@ public class KnnTfg  {
 						try {
 							int valor = scanner.nextInt();
 							if (valor < 0 || valor >= data.numeroCasos()) {
-								logger.error("Índice fuera de rango. Debe estar entre 0 y {}", data.numeroCasos()-1);
+								logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroCasos()-1);
 								break;
 							}
 							if (logger.isInfoEnabled()) {
 								logger.info(data.getInstance(valor).toString());
 							}
 						} catch (InputMismatchException e) {
-							logger.error("Debe ingresar un número entero válido");
+							logger.error(MENSAJE_INGRESAR_NUMERO);
 							scanner.nextLine(); // Limpiar buffer
 						}
 						break;
@@ -515,7 +607,7 @@ public class KnnTfg  {
 		logger.info("4. Información atributos cualitativos");
 		logger.info("5. Mostrar pesos de atributos");
 		logger.info("6. Volver al menú principal");
-		logger.info("Seleccione una opción: ");
+		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
 	public static void infoCuantitativo(Dataset data) {
@@ -546,12 +638,12 @@ public class KnnTfg  {
 					try {
 						valor = scanner.nextInt();
 						if (valor < 0 || valor >= data.numeroAtributos()) {
-							logger.error("Índice fuera de rango. Debe estar entre 0 y {}", data.numeroAtributos()-1);
+							logger.error(MENSAJE_INDICE_FUERA_RANGO, data.numeroAtributos()-1);
 							break;
 						}
 						procesarOpcionCuantitativa(data, valor, opcion);
 					} catch (InputMismatchException e) {
-						logger.error("Debe ingresar un número entero válido");
+						logger.error(MENSAJE_INGRESAR_NUMERO);
 						scanner.nextLine();
 					}
 					break;
@@ -573,6 +665,9 @@ public class KnnTfg  {
 				case 2: logDoubleValue(atributo.media()); break;
 				case 3: logDoubleValue(atributo.maximo()); break;
 				case 4: logDoubleValue(atributo.minimo()); break;
+				default:
+					logger.warn("Opción no válida: {}. Las opciones disponibles son 1-4", option);
+					break;
 			}
 		} catch (ClassCastException e) {
 			logger.error("El atributo en el índice {} no es cuantitativo", index);
