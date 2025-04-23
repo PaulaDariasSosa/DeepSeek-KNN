@@ -25,6 +25,7 @@ public class KnnTfg  {
 	public static final String MENSAJE_INTRODUCIR_K = "Introduce el valor de k: ";
 	public static final String MENSAJE_INTRODUCIR_VALORES = "Introduce los valores: ";
 	public static final String MENSAJE_CONJUNTO_ENTRENAMIENTO = "Introduzca el porcentaje para el conjunto de entrenamiento";
+	public static final String MENSAJE_RESULTADOS_TXT = "resultados.txt";
 
 	public static void main(String[] args) throws IOException {
 		String ruta = "";
@@ -207,19 +208,15 @@ public class KnnTfg  {
 							// Validaciones adicionales
 							if (!Files.exists(filePath)) {
 								logger.error("El archivo no existe");
-								continue;
 							}
 							if (!Files.isReadable(filePath)) {
 								logger.error("No se tienen permisos de lectura");
-								continue;
 							}
 							if (Files.size(filePath) == 0) {
 								logger.error("El archivo está vacío");
-								continue;
 							}
 						} catch (IOException e) {
 							logger.error("Error al validar el archivo: {}", e.getMessage());
-							continue;
 						}
 						break;
 					case 2:
@@ -522,74 +519,103 @@ public class KnnTfg  {
 	}
 
 	public static void infoCuantitativo(Dataset data) {
-		logger.info("               [1] Mostrar nombre ");
-		logger.info("               [2] Mostrar media ");
-		logger.info("               [3] Mostrar maximo");
-		logger.info("               [4] Mostrar minimo");
-		logger.info("               [5] Mostrar desviación tipica");
-		int opcion = 1;
-		Scanner scanner1 = new Scanner(System.in);
-		opcion = scanner1.nextInt();
+		logger.info("\n=== INFORMACIÓN CUANTITATIVA ===");
+		logger.info("1. Mostrar nombre");
+		logger.info("2. Mostrar media");
+		logger.info("3. Mostrar máximo");
+		logger.info("4. Mostrar mínimo");
+		logger.info("5. Mostrar desviación típica");
+		logger.info("Seleccione una opción (1-5): ");
 
+		try {
+			Scanner scanner = new Scanner(System.in);
+			int opcion = scanner.nextInt();
+
+			switch(opcion) {
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+					logger.info("Introduce el índice del atributo cuantitativo: ");
+					int valor = scanner.nextInt();
+					mostrarInfoAtributo(data, valor, opcion);
+					break;
+
+				case 5:
+					logger.info("Introduce el índice del atributo cuantitativo: ");
+					try {
+						valor = scanner.nextInt();
+						if (valor < 0 || valor >= data.numeroAtributos()) {
+							logger.error("Índice fuera de rango. Debe estar entre 0 y {}", data.numeroAtributos()-1);
+							break;
+						}
+						procesarOpcionCuantitativa(data, valor, opcion);
+					} catch (InputMismatchException e) {
+						logger.error("Debe ingresar un número entero válido");
+						scanner.nextLine();
+					}
+					break;
+
+				default:
+					logger.warn("Opción no válida: {}. Por favor seleccione una opción entre 1 y 5", opcion);
+					break;
+			}
+		} catch (InputMismatchException e) {
+			logger.error("Error: Debe ingresar un número válido");
+		}
+	}
+
+	private static void mostrarInfoAtributo(Dataset data, int index, int option) {
+		try {
+			Cuantitativo atributo = (Cuantitativo) data.get(index);
+			switch(option) {
+				case 1: logger.info(atributo.getNombre()); break;
+				case 2: logDoubleValue(atributo.media()); break;
+				case 3: logDoubleValue(atributo.maximo()); break;
+				case 4: logDoubleValue(atributo.minimo()); break;
+			}
+		} catch (ClassCastException e) {
+			logger.error("El atributo en el índice {} no es cuantitativo", index);
+		} catch (IndexOutOfBoundsException e) {
+			logger.error("Índice inválido: {}", index);
+		}
+	}
+
+	private static void logDoubleValue(double value) {
+		if (logger.isInfoEnabled()) {
+			logger.info(Double.toString(value));
+		}
+	}
+
+	private static void procesarOpcionCuantitativa(Dataset data, int valor, int opcion) {
+		try {
+			Cuantitativo auxiliar = (Cuantitativo) data.get(valor);
+			mostrarInformacionCuantitativa(auxiliar, opcion);
+		} catch (ClassCastException e) {
+			logger.error("El atributo en el índice {} no es cuantitativo", valor);
+		}
+	}
+
+	// Método para mostrar la información (ya existente)
+	private static void mostrarInformacionCuantitativa(Cuantitativo auxiliar, int opcion) {
 		switch(opcion) {
-			case(1):
-				int valor = 0;
-				valor = scanner1.nextInt();
-				Cuantitativo auxiliar = (Cuantitativo) data.get(valor);
-				logger.info(auxiliar.getNombre());
+			case 1:
+				if (logger.isInfoEnabled()) logger.info(auxiliar.getNombre());
 				break;
-			case(2):
-				valor = 0;
-				scanner1 = new Scanner(System.in);
-				valor = scanner1.nextInt();
-				auxiliar = (Cuantitativo) data.get(valor);
-				if (logger.isInfoEnabled()) {
-					logger.info(Double.toString(auxiliar.media()));
-				}
+			case 2:
+				if (logger.isInfoEnabled()) logger.info(Double.toString(auxiliar.media()));
 				break;
-			case(3):
-				valor = 0;
-				scanner1 = new Scanner(System.in);
-				valor = scanner1.nextInt();
-				auxiliar = (Cuantitativo) data.get(valor);
-				if (logger.isInfoEnabled()) {
-					logger.info(Double.toString(auxiliar.maximo()));
-				}
+			case 3:
+				if (logger.isInfoEnabled()) logger.info(Double.toString(auxiliar.maximo()));
 				break;
-			case(4):
-				valor = 0;
-				scanner1 = new Scanner(System.in);
-				valor = scanner1.nextInt();
-				auxiliar = (Cuantitativo) data.get(valor);
-				if (logger.isInfoEnabled()) {
-					logger.info(Double.toString(auxiliar.minimo()));
-				}
+			case 4:
+				if (logger.isInfoEnabled()) logger.info(Double.toString(auxiliar.minimo()));
 				break;
 			case 5:
-				logger.info("Introduce el índice del atributo cuantitativo: ");
-				try {
-					valor = scanner1.nextInt();
-					if (valor < 0 || valor >= data.numeroAtributos()) {
-						logger.error("Índice fuera de rango. Debe estar entre 0 y {}", data.numeroAtributos()-1);
-						break;
-					}
-
-					try {
-						auxiliar = (Cuantitativo) data.get(valor);
-						switch(opcion) {
-							case 1: logger.info(auxiliar.getNombre()); break;
-							case 2: logger.info(Double.toString(auxiliar.media())); break;
-							case 3: logger.info(Double.toString(auxiliar.maximo())); break;
-							case 4: logger.info(Double.toString(auxiliar.minimo())); break;
-							case 5: logger.info(Double.toString(auxiliar.desviacion())); break;
-						}
-					} catch (ClassCastException e) {
-						logger.error("El atributo en el índice {} no es cuantitativo", valor);
-					}
-				} catch (InputMismatchException e) {
-					logger.error("Debe ingresar un número entero válido");
-					scanner1.nextLine(); // Limpiar buffer
-				}
+				if (logger.isInfoEnabled()) logger.info(Double.toString(auxiliar.desviacion()));
+				break;
+			default:
+				logger.warn("Opción no válida: {}. Las opciones disponibles son 1-5", opcion);
 				break;
 		}
 	}
@@ -686,7 +712,7 @@ public class KnnTfg  {
 				nuevo = new Entrenamiento(datos, (double)valor/100);
 				logger.info(MENSAJE_INTRODUCIR_K);
 				int k = scanner.nextInt();
-				nuevo.generarPrediccion(k, "resultados.txt");
+				nuevo.generarPrediccion(k, MENSAJE_RESULTADOS_TXT);
 				nuevo.generarMatriz(k);
 				break;
 			case(2):
@@ -711,7 +737,7 @@ public class KnnTfg  {
 				nuevo.read(archivo1, archivo2);
 				logger.info(MENSAJE_INTRODUCIR_K);
 				k = scanner.nextInt();
-				nuevo.generarPrediccion(k, "resultados.txt");
+				nuevo.generarPrediccion(k, MENSAJE_RESULTADOS_TXT);
 				nuevo.generarMatriz(k);
 				break;
 			default:
@@ -736,7 +762,7 @@ public class KnnTfg  {
 			nuevo = new Entrenamiento(datos, (double)valor/100, 1234);
 			logger.info(MENSAJE_INTRODUCIR_K);
 			int k = scanner.nextInt();
-			nuevo.generarPrediccion(k, "resultados.txt");
+			nuevo.generarPrediccion(k, MENSAJE_RESULTADOS_TXT);
 			nuevo.generarMatriz(k);
 			return nuevo;
 		case(2):
@@ -750,7 +776,7 @@ public class KnnTfg  {
 			nuevo = new Entrenamiento(datos, (double)valor/100, valor2);
 			logger.info(MENSAJE_INTRODUCIR_K);
 			k = scanner.nextInt();
-			nuevo.generarPrediccion(k, "resultados.txt");
+			nuevo.generarPrediccion(k, MENSAJE_RESULTADOS_TXT);
 			nuevo.generarMatriz(k);
 			return nuevo;
 		default:
