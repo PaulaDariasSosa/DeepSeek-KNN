@@ -680,10 +680,6 @@ public class KnnTfg  {
 		logger.info("Seleccione una opción (1-5): ");
 	}
 
-	private static int obtenerOpcionUsuario(Scanner scanner) throws InputMismatchException {
-		return scanner.nextInt();
-	}
-
 	private static void procesarDesviacionTipica(Dataset data, Scanner scanner) {
 		logger.info("Introduce el índice del atributo cuantitativo: ");
 		try {
@@ -709,14 +705,6 @@ public class KnnTfg  {
 		} catch (InputMismatchException e) {
 			logger.error(MENSAJE_INGRESAR_NUMERO);
 			scanner.nextLine();
-		}
-	}
-
-	private static void validarIndiceAtributo(Dataset data, int valor) {
-		if (valor < 0 || valor >= data.numeroAtributos()) {
-			throw new IllegalArgumentException(
-					String.format("Índice fuera de rango (0-%d)", data.numeroAtributos()-1)
-			);
 		}
 	}
 
