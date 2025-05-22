@@ -48,12 +48,18 @@ public class KnnTfg  {
 	 * @throws DatasetOperationException Si ocurre un error al operar con el dataset
 	 * @throws IllegalArgumentException Si los parámetros son nulos
 	 */
-	private static void procesarOpcion(AppContext context, Scanner scanner) {
+	static void procesarOpcion(AppContext context, Scanner scanner) {
 		if (context == null || scanner == null) {
 			throw new IllegalArgumentException("Contexto y scanner no pueden ser nulos");
 		}
 
 		try {
+			if (!scanner.hasNextInt()) {
+				logger.error("Entrada inválida. Debe ingresar un número.");
+				scanner.nextLine(); // Limpiar entrada incorrecta
+				return;
+			}
+
 			int opcion = scanner.nextInt();
 			scanner.nextLine(); // Limpiar buffer
 
@@ -81,12 +87,15 @@ public class KnnTfg  {
 					break;
 				default:
 					logger.warn("Opción no válida seleccionada: {}", opcion);
+					// No salimos del programa, solo mostramos advertencia
 			}
 		} catch (InputMismatchException e) {
 			logger.error("Entrada inválida. Debe ingresar un número.");
 			scanner.nextLine(); // Limpiar entrada incorrecta
 		} catch (IOException e) {
-			throw new DatasetOperationException("Error al guardar el dataset: " + e.getMessage(), e);
+			logger.error("Error al guardar el dataset: {}", e.getMessage());
+		} catch (Exception e) {
+			logger.error("Error inesperado: {}", e.getMessage());
 		}
 	}
 
@@ -110,7 +119,7 @@ public class KnnTfg  {
 		}
 	}
 
-	private static boolean validarArchivo(String filePath) {
+	static boolean validarArchivo(String filePath) {
 		File file = new File(filePath);
 
 		if (!file.exists()) {
@@ -131,7 +140,7 @@ public class KnnTfg  {
 	}
 
 	// Clase para mantener el estado de la aplicación
-	private static class AppContext {
+	static class AppContext {
 		String ruta = "";
 		boolean salida = false;
 		Dataset datosCrudos = new Dataset();
@@ -184,7 +193,7 @@ public class KnnTfg  {
 		datos.write(ruta + archivo);
 	}
 
-	private static void ejecutarKNN(Dataset datosCrudos, Dataset datos, Scanner scanner) {
+	static void ejecutarKNN(Dataset datosCrudos, Dataset datos, Scanner scanner) {
 		if (datosCrudos.numeroCasos() == 0) {
 			logger.error("No se puede clasificar: el dataset de entrenamiento está vacío");
 			return;
@@ -343,15 +352,21 @@ public class KnnTfg  {
 	}
 
 	public static Dataset modify(Dataset data) {
-		int opcion = 2;
+		int opcion = 0;
 		Scanner scanner = new Scanner(System.in);
 
 		while (opcion != 5) {
 			mostrarMenuModificacion();
 
 			try {
-				opcion = scanner.nextInt();
-				scanner.nextLine(); // Limpiar buffer
+				if (scanner.hasNextInt()) {
+					opcion = scanner.nextInt();
+					scanner.nextLine(); // Limpiar buffer
+				} else {
+					logger.error("Entrada inválida. Debe ingresar un número.");
+					scanner.nextLine(); // Limpiar entrada incorrecta
+					continue;
+				}
 
 				switch(opcion) {
 					case 1:
@@ -373,10 +388,10 @@ public class KnnTfg  {
 						logger.info("Saliendo del menú de modificación");
 						break;
 					default:
-						logger.warn("Opción no válida: {}. Por favor ingrese un número entre 1 y 5", opcion);
+						logger.warn("Opción no válida. Por favor ingrese un número entre 1 y 5");
 				}
 			} catch (InputMismatchException e) {
-				logger.error(MENSAJE_OPCION_NO_VALIDA);
+				logger.error("Error: Debe ingresar un número válido");
 				scanner.nextLine(); // Limpiar buffer
 			}
 		}

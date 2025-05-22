@@ -35,56 +35,58 @@ public class Cuantitativo extends Atributo{
 	public void setValores(Vector nuevos) {
 		this.valores = nuevos;
 	}
-	
+
 	public double minimo() {
-		double minimo = this.valores.get(0);
-		for(int i = 0; i < this.valores.size(); ++i) {
-			if(minimo > this.valores.get(i)) minimo = this.valores.get(i);
-		}
-		return minimo;
+		return valores.getMin(); // Usamos el método existente de Vector
 	}
-	
+
 	public double maximo() {
-		double maximo = this.valores.get(0);
-		for(int i = 0; i < this.valores.size(); ++i) {
-			if(maximo < this.valores.get(i)) maximo = this.valores.get(i);
-		}
-		return maximo;
+		return valores.getMax(); // Usamos el método existente de Vector
 	}
-	
+
 	public double media() {
-		double media = this.valores.get(0);
-		for(int i = 0; i < this.valores.size(); ++i) {
-			media += this.valores.get(i);
-		}
-		return media/this.valores.size();
+		return valores.avg(); // Usamos el método existente de Vector
 	}
-	
+
 	public double desviacion() {
+		if (valores.size() <= 1) return 0.0;
+
 		double media = this.media();
-		double auxiliar = 0;
-		for(int i = 0; i < this.valores.size(); ++i) {
-			auxiliar += (this.valores.get(i) - media) * (this.valores.get(i) - media);
+		double sumaCuadrados = 0.0;
+
+		for (int i = 0; i < valores.size(); i++) {
+			sumaCuadrados += Math.pow(valores.get(i) - media, 2);
 		}
-		auxiliar /= this.valores.size();
-		return Math.sqrt(auxiliar);
+
+		return Math.sqrt(sumaCuadrados / (valores.size() - 1)); // Desviación muestral
 	}
-	
-	public int size() {
-		return this.valores.size();
-	}
-	
+
 	public void estandarizacion() {
-		for (int i = 0; i < valores.size(); ++i) {
-			valores.set(i, (valores.get(i)-this.media())/this.desviacion());
+		if (valores.size() <= 1) return;
+
+		double media = this.media();
+		double desviacion = this.desviacion();
+
+		for (int i = 0; i < valores.size(); i++) {
+			double valorEstandarizado = (valores.get(i) - media) / desviacion;
+			valores.set(i, valorEstandarizado);
 		}
 	}
 
 	@Override
 	public void add(Object valor) {
-		valores.add((double) valor);
-		
+		if (valor instanceof Number) {
+			valores.add(((Number)valor).doubleValue());
+		} else {
+			throw new IllegalArgumentException("El valor debe ser numérico");
+		}
 	}
+
+	public int size() {
+		return this.valores.size();
+	}
+
+
 	
 	@Override
 	public Object getValor(int i) {

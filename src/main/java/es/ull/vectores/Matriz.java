@@ -136,35 +136,35 @@ public class Matriz {
         }
         return true;
     }
-    
+
     public void transpose() {
-    	int temp = numRows;
-    	numRows = numCols;
-    	numCols = temp;
-    	// Crear una nueva matriz transpuesta
-    	ArrayList<Vector> transposedMatrix = new ArrayList<Vector>(numRows);
-        for (int i = 0; i < numRows; i++) {
-            transposedMatrix.set(i, (new Vector(numCols)));
-            for (int j = 0; j < numCols; j++) {
-            	Vector aux = transposedMatrix.get(i);
-            	aux.set(j, matrix.get(j).get(i));
-                transposedMatrix.set(i, aux);
+        ArrayList<Vector> transposedMatrix = new ArrayList<>();
+        for (int j = 0; j < numCols; j++) {
+            Vector newRow = new Vector(numRows);
+            for (int i = 0; i < numRows; i++) {
+                newRow.set(i, matrix.get(i).get(j));
             }
+            transposedMatrix.add(newRow);
         }
-        // Actualizar la matriz original con la matriz transpuesta
+
+        // Actualizar dimensiones y matriz
+        int temp = numRows;
+        numRows = numCols;
+        numCols = temp;
         matrix = transposedMatrix;
-        // Actualizar el estado de orientación
         isTransposed = !isTransposed;
     }
-    
+
     public void deleteRows(int indice) {
-    	matrix.remove(indice);
+        matrix.remove(indice);
+        numRows--; // Añadir esta línea para actualizar el contador
     }
-    
-    // hace la traspuesta y luego llama a deleterows
+
     public void deleteCols(int indice) {
-    	this.transpose();
-    	this.deleteRows(indice);
+        this.transpose();
+        this.deleteRows(indice);
+        this.transpose();
+        // No necesitamos numCols-- porque transpose ya maneja las dimensiones
     }
     
     public void addRows() {
@@ -174,13 +174,22 @@ public class Matriz {
     public void addCols() {
     	this.numCols += 1;
     }
-    
+
     public List<Vector> normalizar(){
-    	this.transpose();
-    	List<Vector> nueva = this.matrix;
-    	for (Vector fila: nueva) fila.normalize();
-    	this.transpose();
-    	return nueva;
+        this.transpose();
+        List<Vector> nueva = new ArrayList<>(this.matrix); // Crear copia
+        for (Vector fila: nueva) {
+            if (fila.getMax() != fila.getMin()) { // Solo normalizar si hay diferencia
+                fila.normalize();
+            } else {
+                // Si todos son iguales, establecer a 0.5 o manejar como caso especial
+                for (int i = 0; i < fila.size(); i++) {
+                    fila.set(i, 0.5);
+                }
+            }
+        }
+        this.transpose();
+        return nueva;
     }
     
     public void set(int i, int j, double valor) {

@@ -181,6 +181,18 @@ public class Entrenamiento {
 		return (aciertos * 100.0) / test.numeroCasos();
 	}
 
+	public Dataset getTrainDataset() {
+		return this.train;
+	}
+
+	public Dataset getTestDataset() {
+		return this.test;
+	}
+
+	public List<String> getClases() {
+		return this.clases;
+	}
+
 
 	
 }

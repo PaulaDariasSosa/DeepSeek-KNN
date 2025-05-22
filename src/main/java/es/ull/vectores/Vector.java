@@ -72,7 +72,15 @@ public class Vector {
      */
     public Vector(File file) throws FileNotFoundException {
         coef = new ArrayList<>();
-        readFileWithScanner(file);
+        try (Scanner scanner = new Scanner(file)) {
+            while (scanner.hasNext()) {
+                if (scanner.hasNextDouble()) {
+                    coef.add(scanner.nextDouble());
+                } else {
+                    scanner.next(); // Saltar tokens no doubles
+                }
+            }
+        }
     }
 
     /**
@@ -220,7 +228,7 @@ public class Vector {
 
     public void write(File file) throws IOException {
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write(this.toString());
+            writer.write(this.toString().replace("[", "").replace("]", "").replace(",", " "));
         }
     }
 
@@ -269,7 +277,7 @@ public class Vector {
         return sum / coef.size();
     }
 
-    private void readFile(String filename) throws IOException {
+    void readFile(String filename) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -278,7 +286,7 @@ public class Vector {
         }
     }
 
-    private void readFileWithScanner(File file) throws FileNotFoundException {
+    void readFileWithScanner(File file) throws FileNotFoundException {
         try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextDouble()) {
                 coef.add(scanner.nextDouble());

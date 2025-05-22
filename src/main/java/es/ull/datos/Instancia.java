@@ -12,9 +12,9 @@ public class Instancia {
 	public Instancia(){
 		this.valores = new ArrayList<Object>();
 	}
-	
+
 	public Instancia(List<Object> nuevos){
-		this.valores = nuevos;
+		this.valores = new ArrayList<>(nuevos); // Crear nueva lista mutable
 	}
 	
 	public Instancia(String nuevos){
@@ -30,15 +30,14 @@ public class Instancia {
 	public String toString() {
 		return valores.toString();
 	}
-	
+
 	public Vector getVector() {
 		Vector aux = new Vector();
 		for (int i = 0; i < valores.size()-1; ++i) {
-			 if (valores.get(i) instanceof Double) {
-				 aux.add((Double) valores.get(i));
-	         } else if (valores.get(i) instanceof Integer) {
-	             aux.add((int) valores.get(i));
-	         }
+			Object valor = valores.get(i);
+			if (valor instanceof Number) {
+				aux.add(((Number)valor).doubleValue());
+			}
 		}
 		return aux;
 	}
@@ -46,37 +45,43 @@ public class Instancia {
 	public String getClase() {
 		return (String) this.valores.get(valores.size()-1);
 	}
-	
+
 	public void normalizar() {
 		Vector aux = this.getVector();
 		aux.normalize();
 		ArrayList<Object> arrayListObject = new ArrayList<>();
-        for (Double d : aux.getValores()) {
-            arrayListObject.add(d); // La conversión automática de tipos se encarga de convertir Double a Object
-        }
+		for (Double d : aux.getValores()) {
+			arrayListObject.add(d);
+		}
+		// Preservar la clase
+		if (!valores.isEmpty()) {
+			arrayListObject.add(valores.get(valores.size()-1));
+		}
 		this.valores = arrayListObject;
 	}
-	
+
 	public void estandarizar() {
 		Vector aux = this.getVector();
-		double media = 0.0;
-		for(int i = 0; i < aux.size(); ++i) {
-			media += aux.get(i);
+		double media = aux.avg(); // Usar método existente de Vector
+		double desviacion = 0.0;
+
+		for (int i = 0; i < aux.size(); ++i) {
+			desviacion += Math.pow(aux.get(i) - media, 2);
 		}
-		media =  media/aux.size(); 
-		double auxiliar = 0;
-		for(int i = 0; i < aux.size(); ++i) {
-			auxiliar += (aux.get(i) - media) * (aux.get(i) - media);
-		}
-		auxiliar /= this.valores.size();
-		double desviacion = Math.sqrt(auxiliar);
+		desviacion = Math.sqrt(desviacion/aux.size());
+
 		for (int i = 0; i < aux.size(); ++i) {
 			aux.set(i, (aux.get(i)-media)/desviacion);
 		}
+
 		ArrayList<Object> arrayListObject = new ArrayList<>();
-        for (Double d : aux.getValores()) {
-            arrayListObject.add(d); // La conversión automática de tipos se encarga de convertir Double a Object
-        }
+		for (Double d : aux.getValores()) {
+			arrayListObject.add(d);
+		}
+		// Preservar la clase
+		if (!valores.isEmpty()) {
+			arrayListObject.add(valores.get(valores.size()-1));
+		}
 		this.valores = arrayListObject;
 	}
 	
