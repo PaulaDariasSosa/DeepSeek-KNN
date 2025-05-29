@@ -11,35 +11,56 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @brief Clase que representa un conjunto de datos para aprendizaje automático
+ *
+ * Esta clase almacena y gestiona un conjunto de atributos (características)
+ * que pueden ser cualitativos o cuantitativos, permitiendo diversas operaciones
+ * como lectura/escritura de archivos, manipulación de instancias y preprocesamiento.
+ */
 public class Dataset {
 	private List<Atributo> atributos;
 	int preprocesado;
-	
+
+	/**
+	 * @brief Constructor por defecto que crea un dataset vacío
+	 */
 	public Dataset() {
 		this.atributos = new ArrayList<Atributo>();
 	}
-	
+
+	/**
+	 * @brief Constructor que crea un dataset a partir de una lista de atributos
+	 * @param nuevos Lista de atributos para inicializar el dataset
+	 */
 	public Dataset(List<Atributo> nuevos) {
 		this();
 		this.atributos = nuevos;
 	}
-	
+
+	/**
+	 * @brief Constructor que lee un dataset desde un archivo
+	 * @param filename Ruta del archivo a leer
+	 * @throws IOException Si ocurre un error de lectura del archivo
+	 */
 	public Dataset(String filename) throws IOException {
 		this();
 		this.read(filename);
 	}
-	
+
+	/**
+	 * @brief Constructor copia
+	 * @param datos Dataset a copiar
+	 */
 	public Dataset(Dataset datos) {
 		this();
 		this.atributos = new ArrayList<>(datos.atributos);
 	}
 
 	/**
-	 * Cambia el peso de todos los atributos en el dataset.
-	 *
-	 * @param pesos Una lista de pesos (en formato String) que se asignarán a los atributos.
-	 * @throws IllegalArgumentException Si la lista de pesos no tiene el mismo tamaño que la lista de atributos,
-	 *                                  o si algún peso no es un número válido o está fuera del rango permitido.
+	 * @brief Cambia los pesos de todos los atributos
+	 * @param pesos Lista de nuevos pesos (como String)
+	 * @throws IllegalArgumentException Si el número de pesos no coincide con los atributos
 	 */
 	public void cambiarPeso(List<String> pesos) {
 		if (pesos.size() != atributos.size()) {
@@ -52,8 +73,11 @@ public class Dataset {
 		}
 	}
 
-
-	// Cambiar peso para uno
+	/**
+	 * @brief Cambia el peso de un atributo específico
+	 * @param index Índice del atributo a modificar
+	 * @param peso Nuevo peso a asignar
+	 */
 	public void cambiarPeso(int index, double peso) {
 		Atributo aux = this.atributos.get(index);
 		aux.setPeso(peso);
@@ -61,32 +85,34 @@ public class Dataset {
 	}
 
 	/**
-	 * Cambia el peso de todos los atributos en el dataset.
-	 *
-	 * @param peso El nuevo peso que se asignará a todos los atributos.
-	 * @throws IllegalArgumentException Si el peso no es válido (por ejemplo, fuera de un rango específico).
+	 * @brief Cambia todos los pesos al mismo valor
+	 * @param peso Nuevo peso para todos los atributos
+	 * @throws IllegalArgumentException Si el peso no está entre 0 y 1
 	 */
 	public void cambiarPeso(double peso) {
-		// Validar que el peso esté en un rango válido (opcional)
 		if (peso < 0 || peso > 1) {
 			throw new IllegalArgumentException("El peso debe estar entre 0 y 1.");
 		}
 
-		// Cambiar el peso de todos los atributos
 		for (Atributo atributo : atributos) {
 			atributo.setPeso(peso);
 		}
 	}
-	
-	// Print
+
+	/**
+	 * @brief Imprime el dataset usando el logger
+	 */
 	public void print() {
 		Logger logger = LoggerFactory.getLogger(Dataset.class.getName());
 		if (logger.isInfoEnabled()) {
 			logger.info(this.toString());
 		}
 	}
-	
-	// toString
+
+	/**
+	 * @brief Representación en cadena del dataset
+	 * @return String con los valores del dataset en formato CSV
+	 */
 	public String toString() {
 		StringBuilder data = new StringBuilder();
 		List<String> valores = this.nombreAtributos();
@@ -104,17 +130,24 @@ public class Dataset {
 		}
 		return data.toString();
 	}
-	
-	// Modify (mezcla de add y delete)
-	// Add instancia 
+
+	/**
+	 * @brief Añade una nueva instancia al dataset
+	 * @param nueva Instancia a añadir
+	 */
 	public void add(Instancia nueva) {
 		for (int i = 0; i < atributos.size(); ++i) {
 			Atributo aux =  atributos.get(i);
 			aux.add(nueva.getValores().get(i));
 			atributos.set(i, aux);
-		}	
+		}
 	}
 
+	/**
+	 * @brief Añade una nueva instancia representada como lista de Strings
+	 * @param nueva Lista de valores de la instancia
+	 * @throws IllegalArgumentException Si la instancia no es válida
+	 */
 	public void add(List<String> nueva) {
 		validateNewInstance(nueva);
 
@@ -171,7 +204,12 @@ public class Dataset {
 			}
 		}
 	}
-	// Delete
+
+	/**
+	 * @brief Elimina una instancia del dataset
+	 * @param index Índice de la instancia a eliminar
+	 * @throws DatasetOperationException Si ocurre un error durante la operación
+	 */
 	public void delete(int index) throws DatasetOperationException {
 		validateDeleteOperation(index);
 
@@ -200,7 +238,9 @@ public class Dataset {
 		}
 	}
 
-	// Dedicated exception class
+	/**
+	 * @brief Clase de excepción para operaciones con datasets
+	 */
 	public class DatasetOperationException extends RuntimeException {
 		public DatasetOperationException(String message) {
 			super(message);
@@ -210,61 +250,82 @@ public class Dataset {
 			super(message, cause);
 		}
 	}
-	
-	// Método para escribir el dataset en un archivo CSV
-    public void write(String filename) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
-            writer.write(this.toString());
-        }
-    }
-	
+
+	/**
+	 * @brief Escribe el dataset en un archivo CSV
+	 * @param filename Ruta del archivo a escribir
+	 * @throws IOException Si ocurre un error de escritura
+	 */
+	public void write(String filename) throws IOException {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+			writer.write(this.toString());
+		}
+	}
+
+	/**
+	 * @brief Lee un dataset desde un archivo CSV
+	 * @param filename Ruta del archivo a leer
+	 * @throws IOException Si ocurre un error de lectura
+	 */
 	public void read(String filename) throws IOException {
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            // Leer la primera línea para obtener los nombres de los atributos
-			// llamar al constructor vacio
-            String[] attributeNamesArray = reader.readLine().split(",");
-            String line;
-            if ((line = reader.readLine()) != null) {
-            	String[] values = line.split(",");
-            	for (int i = 0; i < attributeNamesArray.length ; ++i) {
-            		try {
-            			this.atributos.add(new Cuantitativo(attributeNamesArray[i], Double.parseDouble(values[i]))); // sino poner encima Double.parseDouble(values[i])
-            		} catch (NumberFormatException e) {
-            			this.atributos.add(new Cualitativo(attributeNamesArray[i], values[i]));
-            		}
-            	}
-            }
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",");
-                for (int i = 0; i < attributeNamesArray.length ; ++i) {
-                	Atributo nuevo = this.atributos.get(i);
-            		try {
-            			nuevo.add(Double.parseDouble(values[i]));
-            		} catch (NumberFormatException e) {
-            			nuevo.add(values[i]);
-            		}
-            		this.atributos.set(i, nuevo);
-            	}
-            }
-        }
+			String[] attributeNamesArray = reader.readLine().split(",");
+			String line;
+			if ((line = reader.readLine()) != null) {
+				String[] values = line.split(",");
+				for (int i = 0; i < attributeNamesArray.length ; ++i) {
+					try {
+						this.atributos.add(new Cuantitativo(attributeNamesArray[i], Double.parseDouble(values[i])));
+					} catch (NumberFormatException e) {
+						this.atributos.add(new Cualitativo(attributeNamesArray[i], values[i]));
+					}
+				}
+			}
+			while ((line = reader.readLine()) != null) {
+				String[] values = line.split(",");
+				for (int i = 0; i < attributeNamesArray.length ; ++i) {
+					Atributo nuevo = this.atributos.get(i);
+					try {
+						nuevo.add(Double.parseDouble(values[i]));
+					} catch (NumberFormatException e) {
+						nuevo.add(values[i]);
+					}
+					this.atributos.set(i, nuevo);
+				}
+			}
+		}
 	}
-	
-	// numero atributos
+
+	/**
+	 * @brief Obtiene el número de atributos del dataset
+	 * @return Número de atributos
+	 */
 	public int numeroAtributos() {
 		return atributos.size();
 	}
-	
-	// nombre atributos
+
+	/**
+	 * @brief Obtiene los nombres de los atributos
+	 * @return Lista de nombres de atributos
+	 */
 	public List<String> nombreAtributos(){
 		ArrayList<String> nombres = new ArrayList<>();
 		for(int i = 0; i < atributos.size(); ++i) nombres.add(atributos.get(i).getNombre());
 		return nombres;
 	}
-	
+
+	/**
+	 * @brief Obtiene la lista de atributos
+	 * @return Lista de atributos
+	 */
 	public List<Atributo> getAtributos(){
 		return atributos;
 	}
-	
+
+	/**
+	 * @brief Obtiene una copia vacía de los atributos (sin valores)
+	 * @return Lista de atributos vacíos
+	 */
 	public List<Atributo> getAtributosEmpty() {
 		List<Atributo> aux = new ArrayList<Atributo> (atributos.size());
 		for (int i = 0; i < atributos.size(); ++i) {
@@ -283,8 +344,11 @@ public class Dataset {
 		}
 		return aux;
 	}
-	
-	// numero casos
+
+	/**
+	 * @brief Obtiene el número de instancias en el dataset
+	 * @return Número de instancias/casos
+	 */
 	public int numeroCasos() {
 		if (atributos.isEmpty()) {
 			return 0;
@@ -292,21 +356,37 @@ public class Dataset {
 		return atributos.get(0).size();
 	}
 
+	/**
+	 * @brief Obtiene todos los valores del dataset como Strings
+	 * @return Lista de valores del dataset
+	 */
 	public List<String> getValores() {
 		if (atributos.isEmpty()) {
 			return Collections.emptyList();
 		}
 		ArrayList<String> valores = new ArrayList<String>();
-		 for (int i = 0; i < atributos.get(0).size(); ++i) {
-	        	for (int j = 0; j < atributos.size(); ++j) valores.add(String.valueOf(atributos.get(j).getValor(i)));
+		for (int i = 0; i < atributos.get(0).size(); ++i) {
+			for (int j = 0; j < atributos.size(); ++j) valores.add(String.valueOf(atributos.get(j).getValor(i)));
 		}
 		return valores;
 	}
-	
+
+	/**
+	 * @brief Obtiene un atributo por su índice
+	 * @param index Índice del atributo
+	 * @return Atributo solicitado
+	 */
 	public Atributo get(int index) {
 		return atributos.get(index);
 	}
 
+	/**
+	 * @brief Obtiene una instancia específica del dataset
+	 * @param index Índice de la instancia
+	 * @return Instancia solicitada
+	 * @throws IllegalStateException Si el dataset está vacío
+	 * @throws IndexOutOfBoundsException Si el índice está fuera de rango
+	 */
 	public Instancia getInstance(int index) {
 		if (atributos.isEmpty()) {
 			throw new IllegalStateException("El dataset está vacío. No se puede obtener instancias.");
@@ -324,37 +404,60 @@ public class Dataset {
 		}
 		return new Instancia(auxiliar);
 	}
-	
+
+	/**
+	 * @brief Obtiene los pesos de los atributos como Strings
+	 * @return Lista de pesos en formato String
+	 */
 	public List<String> getPesos() {
 		ArrayList<String> valores = new ArrayList<String>();
 		for (Atributo valor : this.atributos) valores.add(valor.get());
 		return valores;
 	}
-	
+
+	/**
+	 * @brief Obtiene las clases únicas del dataset (del último atributo)
+	 * @return Lista de clases únicas
+	 */
 	public List<String> getClases() {
 		return ((Cualitativo) this.atributos.get(atributos.size()-1)).clases();
 	}
-	
+
+	/**
+	 * @brief Obtiene el tipo de preprocesado aplicado
+	 * @return Entero que indica el tipo de preprocesado
+	 */
 	public int getPreprocesado() {
 		return preprocesado;
 	}
-	
+
+	/**
+	 * @brief Establece el tipo de preprocesado
+	 * @param opcion Tipo de preprocesado a aplicar
+	 */
 	public void setPreprocesado(int opcion) {
 		this.preprocesado = opcion;
 	}
-	
+
+	/**
+	 * @brief Establece la lista de atributos
+	 * @param nuevos Nueva lista de atributos
+	 */
 	public void setAtributos(List<Atributo> nuevos) {
 		this.atributos = nuevos;
 	}
-	
+
+	/**
+	 * @brief Crea una copia profunda del dataset
+	 * @return Nueva instancia de Dataset con los mismos datos
+	 */
 	public Dataset copiar() {
 		Dataset copia = new Dataset();
-	    // Realizar una copia profunda de los elementos de la lista
 		ArrayList<Atributo> copiaAtributos = new ArrayList<>();
-	    for (Atributo atributo : this.atributos) {
-	        copiaAtributos.add(atributo.copiar());
-	    }
-	    copia.setAtributos(copiaAtributos);
-	    return copia;
+		for (Atributo atributo : this.atributos) {
+			copiaAtributos.add(atributo.copiar());
+		}
+		copia.setAtributos(copiaAtributos);
+		return copia;
 	}
 }

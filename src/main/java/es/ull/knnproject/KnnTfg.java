@@ -17,17 +17,48 @@ import datos.*;
 import procesamiento.*;
 import entrenamiento.*;
 
+/**
+ * @brief Clase principal que implementa la interfaz de usuario para el sistema KNN
+ *
+ * Proporciona un menú interactivo para:
+ * - Cargar/guardar datasets
+ * - Preprocesar datos
+ * - Realizar clasificaciones
+ * - Ejecutar experimentos
+ * - Visualizar resultados
+ */
 public class KnnTfg  {
+	/** @brief Logger para registro de eventos */
 	private static final Logger logger = LoggerFactory.getLogger(KnnTfg.class);
+
+	/** @brief Mensaje para solicitar valor de k */
 	public static final String MENSAJE_INTRODUCIR_K = "Introduce el valor de k: ";
+
+	/** @brief Mensaje para solicitar valores de instancia */
 	public static final String MENSAJE_INTRODUCIR_VALORES = "Introduce los valores: ";
+
+	/** @brief Mensaje para solicitar porcentaje de entrenamiento */
 	public static final String MENSAJE_CONJUNTO_ENTRENAMIENTO = "Introduzca el porcentaje para el conjunto de entrenamiento";
+
+	/** @brief Nombre del archivo de resultados por defecto */
 	public static final String MENSAJE_RESULTADOS_TXT = "resultados.txt";
+
+	/** @brief Mensaje genérico para selección de opciones */
 	public static final String MENSAJE_SELECCIONE_OPCION =  "Seleccione una opción: ";
+
+	/** @brief Mensaje para opciones inválidas */
 	public static final String MENSAJE_OPCION_NO_VALIDA = "Opción no válida";
+
+	/** @brief Mensaje para índices fuera de rango */
 	public static final String MENSAJE_INDICE_FUERA_RANGO = "Índice fuera de rango. Debe estar entre 0 y {}";
+
+	/** @brief Mensaje para entrada numérica inválida */
 	public static final String MENSAJE_INGRESAR_NUMERO = "Debe ingresar un número entero válido";
 
+	/**
+	 * @brief Punto de entrada principal de la aplicación
+	 * @param args Argumentos de línea de comandos (no utilizados)
+	 */
 	public static void main(String[] args) {
 		AppContext context = new AppContext();
 		Scanner scanner = new Scanner(System.in);
@@ -41,12 +72,10 @@ public class KnnTfg  {
 	}
 
 	/**
-	 * Procesa la opción seleccionada por el usuario en el menú principal.
-	 *
-	 * @param context Contexto de la aplicación con los datos actuales
-	 * @param scanner Scanner para leer la entrada del usuario
-	 * @throws DatasetOperationException Si ocurre un error al operar con el dataset
-	 * @throws IllegalArgumentException Si los parámetros son nulos
+	 * @brief Procesa la opción seleccionada del menú principal
+	 * @param context Contexto de la aplicación
+	 * @param scanner Objeto Scanner para entrada de usuario
+	 * @throws IllegalArgumentException Si context o scanner son nulos
 	 */
 	static void procesarOpcion(AppContext context, Scanner scanner) {
 		if (context == null || scanner == null) {
@@ -99,6 +128,11 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Carga un dataset desde archivo
+	 * @param context Contexto de la aplicación
+	 * @param scanner Scanner para entrada de usuario
+	 */
 	private static void cargarDataset(AppContext context, Scanner scanner) {
 		logger.info("Introduzca la ruta completa del archivo: ");
 		String filePath = scanner.nextLine();
@@ -119,6 +153,11 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Valida que un archivo exista y sea legible
+	 * @param filePath Ruta del archivo a validar
+	 * @return true si el archivo es válido, false en caso contrario
+	 */
 	static boolean validarArchivo(String filePath) {
 		File file = new File(filePath);
 
@@ -139,7 +178,9 @@ public class KnnTfg  {
 		return true;
 	}
 
-	// Clase para mantener el estado de la aplicación
+	/**
+	 * @brief Clase interna para mantener el estado global de la aplicación
+	 */
 	static class AppContext {
 		String ruta = "";
 		boolean salida = false;
@@ -147,6 +188,9 @@ public class KnnTfg  {
 		Dataset datos = new Dataset();
 	}
 
+	/**
+	 * @brief Muestra el menú principal en consola
+	 */
 	private static void mostrarMenu() {
 		logger.info("\n=== MENÚ PRINCIPAL ===");
 		logger.info(" 1. Cargar dataset");
@@ -159,6 +203,11 @@ public class KnnTfg  {
 		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
+	/**
+	 * @brief Muestra mensajes de feedback con colores
+	 * @param mensaje Texto a mostrar
+	 * @param exito true para mensaje exitoso (verde), false para error (rojo)
+	 */
 	private static void mostrarFeedback(String mensaje, boolean exito) {
 		String color = exito ? "\033[32m" : "\033[31m"; // Verde o rojo
 		if (logger.isInfoEnabled()) {
@@ -166,6 +215,13 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Carga y preprocesa un dataset desde archivo
+	 * @param filePath Ruta del archivo CSV
+	 * @return Array con [dataset_crudo, dataset_preprocesado]
+	 * @throws IOException Si hay errores de lectura
+	 * @throws IllegalArgumentException Si el archivo está vacío
+	 */
 	private static Dataset[] cargarDataset(String filePath) throws IOException {
 		File file = new File(filePath);
 
@@ -188,11 +244,23 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Guarda el dataset en un archivo
+	 * @param datos Dataset a guardar
+	 * @param ruta Directorio de destino
+	 * @throws IOException Si hay errores de escritura
+	 */
 	private static void guardarDataset(Dataset datos, String ruta) throws IOException {
 		String archivo = readFile(ruta);
 		datos.write(ruta + archivo);
 	}
 
+	/**
+	 * @brief Ejecuta el algoritmo KNN para clasificar una instancia
+	 * @param datosCrudos Dataset sin procesar
+	 * @param datos Dataset preprocesado
+	 * @param scanner Scanner para entrada de usuario
+	 */
 	static void ejecutarKNN(Dataset datosCrudos, Dataset datos, Scanner scanner) {
 		if (datosCrudos.numeroCasos() == 0) {
 			logger.error("No se puede clasificar: el dataset de entrenamiento está vacío");
@@ -227,6 +295,11 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Lee un archivo y maneja la interacción de usuario para rutas
+	 * @param ruta Ruta base inicial
+	 * @return Nombre del archivo seleccionado
+	 */
 	public static String readFile(String ruta) {
 		FileReaderContext context = new FileReaderContext(ruta);
 		Scanner scanner = new Scanner(System.in);
@@ -239,6 +312,9 @@ public class KnnTfg  {
 		return context.getArchivo();
 	}
 
+	/**
+	 * @brief Clase de contexto para manejar estado durante la lectura de archivos
+	 */
 	private static class FileReaderContext {
 		private String ruta;
 		private String archivo = "";
@@ -273,6 +349,9 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra el menú de opciones para manejo de archivos
+	 */
 	private static void mostrarMenuArchivo() {
 		logger.info("Se debe especificar la ruta y nombre del archivo: ");
 		logger.info("       [1] Introducir nombre");
@@ -281,6 +360,11 @@ public class KnnTfg  {
 		logger.info("       [4] Salir ");
 	}
 
+	/**
+	 * @brief Procesa la opción seleccionada en el menú de archivos
+	 * @param context Contexto actual de lectura
+	 * @param scanner Scanner para entrada de usuario
+	 */
 	private static void procesarOpcionArchivo(FileReaderContext context, Scanner scanner) {
 		try {
 			int opcion = scanner.nextInt();
@@ -299,6 +383,11 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Procesa la entrada del nombre de archivo
+	 * @param context Contexto actual
+	 * @param scanner Scanner para entrada
+	 */
 	private static void procesarOpcionNombreArchivo(FileReaderContext context, Scanner scanner) {
 		logger.info("Introduzca el nombre del archivo: ");
 		String nombreArchivo = scanner.nextLine();
@@ -306,6 +395,10 @@ public class KnnTfg  {
 		context.setArchivo(nombreArchivo);
 	}
 
+	/**
+	 * @brief Valida que un archivo sea accesible para lectura
+	 * @param pathCompleto Ruta completa al archivo
+	 */
 	private static void validarArchivoRead(String pathCompleto) {
 		try {
 			Path filePath = Paths.get(pathCompleto);
@@ -326,12 +419,21 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra la ruta actual configurada
+	 * @param context Contexto con la ruta actual
+	 */
 	private static void mostrarRutaActual(FileReaderContext context) {
 		if (logger.isInfoEnabled()) {
 			logger.info(context.getRuta());
 		}
 	}
 
+	/**
+	 * @brief Cambia la ruta base para operaciones con archivos
+	 * @param context Contexto a modificar
+	 * @param scanner Scanner para entrada
+	 */
 	private static void cambiarRuta(FileReaderContext context, Scanner scanner) {
 		logger.info("Introduzca la nueva ruta: ");
 		String nuevaRuta = scanner.nextLine();
@@ -341,6 +443,9 @@ public class KnnTfg  {
 		context.setRuta(nuevaRuta);
 	}
 
+	/**
+	 * @brief Muestra el menú de modificación de datasets
+	 */
 	private static void mostrarMenuModificacion() {
 		logger.info("\n=== MENÚ DE MODIFICACIÓN ===");
 		logger.info("1. Añadir instancia");
@@ -351,6 +456,11 @@ public class KnnTfg  {
 		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
+	/**
+	 * @brief Menú principal para modificación de datasets
+	 * @param data Dataset a modificar
+	 * @return Dataset modificado
+	 */
 	public static Dataset modify(Dataset data) {
 		int opcion = 0;
 		Scanner scanner = new Scanner(System.in);
@@ -398,6 +508,11 @@ public class KnnTfg  {
 		return data;
 	}
 
+	/**
+	 * @brief Añade una nueva instancia al dataset
+	 * @param data Dataset destino
+	 * @param scanner Scanner para entrada
+	 */
 	private static void agregarInstancia(Dataset data, Scanner scanner) {
 		logger.info("Introduce los valores separados por comas ({} atributos):", data.numeroAtributos());
 		String valores = scanner.nextLine();
@@ -411,6 +526,11 @@ public class KnnTfg  {
 		data.add(Arrays.asList(subcadenas));
 	}
 
+	/**
+	 * @brief Elimina una instancia del dataset
+	 * @param data Dataset a modificar
+	 * @param scanner Scanner para entrada
+	 */
 	private static void eliminarInstancia(Dataset data, Scanner scanner) {
 		logger.info("Introduce el índice a eliminar: ");
 		try {
@@ -426,7 +546,12 @@ public class KnnTfg  {
 			scanner.nextLine(); // Limpiar buffer
 		}
 	}
-	
+
+	/**
+	 * @brief Aplica preprocesamiento al dataset
+	 * @param data Dataset a procesar
+	 * @return Dataset preprocesado
+	 */
 	public static Dataset preprocesar(Dataset data) {
 		logger.info("Seleccione la opción de preprocesado: ");
 		logger.info("       [1] Datos crudos ");
@@ -458,6 +583,9 @@ public class KnnTfg  {
 		return data;
 	}
 
+	/**
+	 * @brief Muestra el menú de gestión de pesos
+	 */
 	private static void mostrarMenuPesos() {
 		logger.info("=== MENÚ DE PESOS ===");
 		logger.info("1. Asignar pesos distintos a todos los atributos");
@@ -465,6 +593,11 @@ public class KnnTfg  {
 		logger.info("3. Cambiar peso de un atributo específico");
 	}
 
+	/**
+	 * @brief Menú principal para modificación de pesos
+	 * @param data Dataset a modificar
+	 * @return Dataset con pesos actualizados
+	 */
 	public static Dataset cambiarPesos(Dataset data) {
 		mostrarMenuPesos();
 		Scanner scanner = new Scanner(System.in);
@@ -483,10 +616,15 @@ public class KnnTfg  {
 			logger.error(MENSAJE_OPCION_NO_VALIDA);
 			scanner.nextLine(); // Limpiar buffer
 		}
-
 		return data;
 	}
 
+	/**
+	 * @brief Cambia pesos individuales para cada atributo
+	 * @param data Dataset a modificar
+	 * @param scanner Scanner para entrada
+	 * @return Dataset modificado
+	 */
 	private static Dataset cambiarPesosIndividuales(Dataset data, Scanner scanner) {
 		logger.info("Introduce los pesos separados por comas ({} valores entre 0 y 1):", data.numeroAtributos());
 		String valores = scanner.nextLine();
@@ -495,10 +633,15 @@ public class KnnTfg  {
 		if (!pesosValidos.isEmpty()) {
 			data.cambiarPeso(pesosValidos);
 		}
-
 		return data;
 	}
 
+	/**
+	 * @brief Valida una lista de pesos ingresados
+	 * @param data Dataset de referencia
+	 * @param valores Cadena con pesos separados por comas
+	 * @return Lista de pesos validados
+	 */
 	private static List<String> validarPesos(Dataset data, String valores) {
 		String[] subcadenas = valores.split(",");
 		List<String> pesosValidos = new ArrayList<>();
@@ -525,6 +668,12 @@ public class KnnTfg  {
 		return pesosValidos;
 	}
 
+	/**
+	 * @brief Asigna un mismo peso a todos los atributos
+	 * @param data Dataset a modificar
+	 * @param scanner Scanner para entrada
+	 * @return Dataset modificado
+	 */
 	private static Dataset cambiarPesoGlobal(Dataset data, Scanner scanner) {
 		try {
 			double pesoGlobal = leerPesoValido(scanner);
@@ -539,6 +688,12 @@ public class KnnTfg  {
 		return data;
 	}
 
+	/**
+	 * @brief Cambia el peso de un atributo específico
+	 * @param data Dataset a modificar
+	 * @param scanner Scanner para entrada
+	 * @return Dataset modificado
+	 */
 	private static Dataset cambiarPesoAtributo(Dataset data, Scanner scanner) {
 		try {
 			logger.info("Índice del atributo a modificar (0-{}):", data.numeroAtributos()-1);
@@ -562,6 +717,12 @@ public class KnnTfg  {
 		return data;
 	}
 
+	/**
+	 * @brief Convierte cadena a valor numérico de peso
+	 * @param pesoStr Cadena con el peso
+	 * @return Valor numérico validado
+	 * @throws NumberFormatException Si el formato es inválido
+	 */
 	private static double parsearPeso(String pesoStr) throws NumberFormatException {
 		double peso = Double.parseDouble(pesoStr);
 		if (peso < 0 || peso > 1) {
@@ -571,11 +732,21 @@ public class KnnTfg  {
 		return peso;
 	}
 
+	/**
+	 * @brief Lee y valida un peso desde consola
+	 * @param scanner Scanner para entrada
+	 * @return Peso validado
+	 */
 	private static double leerPesoValido(Scanner scanner) {
 		double peso = scanner.nextDouble();
 		return parsearPeso(String.valueOf(peso));
 	}
 
+	/**
+	 * @brief Menú de visualización de información del dataset
+	 * @param data Dataset a analizar
+	 * @param scanner Scanner para entrada
+	 */
 	public static void info(Dataset data, Scanner scanner) {
 		if (isDatasetInvalid(data)) {
 			logger.error("No hay dataset cargado o está vacío");
@@ -594,10 +765,21 @@ public class KnnTfg  {
 		}
     }
 
+	/**
+	 * @brief Verifica si un dataset es inválido o vacío
+	 * @param data Dataset a verificar
+	 * @return true si es inválido, false si es válido
+	 */
 	private static boolean isDatasetInvalid(Dataset data) {
 		return data == null || data.numeroCasos() == 0;
 	}
 
+	/**
+	 * @brief Procesa opciones del menú de información
+	 * @param data Dataset actual
+	 * @param scanner Scanner para entrada
+	 * @return Opción seleccionada
+	 */
 	private static int procesarOpcionInfo(Dataset data, Scanner scanner) {
 		try {
 			int opcion = scanner.nextInt();
@@ -620,10 +802,19 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra el dataset completo
+	 * @param data Dataset a imprimir
+	 */
 	private static void handlePrintDataset(Dataset data) {
 		data.print();
 	}
 
+	/**
+	 * @brief Muestra una instancia específica
+	 * @param data Dataset fuente
+	 * @param scanner Scanner para entrada
+	 */
 	private static void handleShowInstance(Dataset data, Scanner scanner) {
 		logger.info("Introduce el índice de la instancia a mostrar: ");
 		try {
@@ -641,6 +832,11 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra los pesos actuales de los atributos
+	 * @param data Dataset a analizar
+	 */
+
 	private static void handleShowWeights(Dataset data) {
 		StringBuilder nombre = new StringBuilder();
 		for(String peso: data.getPesos()) {
@@ -651,6 +847,9 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra el menú de información
+	 */
 	private static void mostrarMenuInformacion() {
 		logger.info("\n=== MENÚ DE INFORMACIÓN ===");
 		logger.info("1. Mostrar dataset completo");
@@ -662,6 +861,11 @@ public class KnnTfg  {
 		logger.info(MENSAJE_SELECCIONE_OPCION);
 	}
 
+	/**
+	 * @brief Menú para información de atributos cuantitativos
+	 * @param data Dataset a analizar
+	 * @param mainScanner Scanner para entrada
+	 */
 	public static void infoCuantitativo(Dataset data, Scanner mainScanner) {
 		mostrarMenuCuantitativo();
 
@@ -685,6 +889,9 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra opciones para atributos cuantitativos
+	 */
 	private static void mostrarMenuCuantitativo() {
 		logger.info("\n=== INFORMACIÓN CUANTITATIVA ===");
 		logger.info("1. Mostrar nombre");
@@ -695,6 +902,11 @@ public class KnnTfg  {
 		logger.info("Seleccione una opción (1-5): ");
 	}
 
+	/**
+	 * @brief Procesa cálculo de desviación típica
+	 * @param data Dataset fuente
+	 * @param scanner Scanner para entrada
+	 */
 	private static void procesarDesviacionTipica(Dataset data, Scanner scanner) {
 		logger.info("Introduce el índice del atributo cuantitativo: ");
 		try {
@@ -711,6 +923,12 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Procesa opciones generales de atributos cuantitativos
+	 * @param data Dataset fuente
+	 * @param scanner Scanner para entrada
+	 * @param opcion Opción seleccionada
+	 */
 	private static void procesarOpcionGeneral(Dataset data, Scanner scanner, int opcion) {
 		logger.info("Introduce el índice del atributo cuantitativo: ");
 		try {
@@ -723,6 +941,12 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra información de un atributo específico
+	 * @param data Dataset fuente
+	 * @param index Índice del atributo
+	 * @param option Opción de visualización
+	 */
 	private static void mostrarInfoAtributo(Dataset data, int index, int option) {
 		try {
 			Cuantitativo atributo = (Cuantitativo) data.get(index);
@@ -742,12 +966,22 @@ public class KnnTfg  {
 		}
 	}
 
+	/**
+	 * @brief Muestra un valor double formateado
+	 * @param value Valor a mostrar
+	 */
 	private static void logDoubleValue(double value) {
 		if (logger.isInfoEnabled()) {
 			logger.info(Double.toString(value));
 		}
 	}
 
+	/**
+	 * @brief Procesa opciones específicas para atributos cuantitativos
+	 * @param data Dataset fuente
+	 * @param valor Índice del atributo
+	 * @param opcion Opción seleccionada
+	 */
 	private static void procesarOpcionCuantitativa(Dataset data, int valor, int opcion) {
 		try {
 			Cuantitativo auxiliar = (Cuantitativo) data.get(valor);
@@ -757,7 +991,11 @@ public class KnnTfg  {
 		}
 	}
 
-	// Método para mostrar la información (ya existente)
+	/**
+	 * @brief Muestra información detallada de atributos cuantitativos
+	 * @param auxiliar Atributo a analizar
+	 * @param opcion Tipo de información a mostrar
+	 */
 	private static void mostrarInformacionCuantitativa(Cuantitativo auxiliar, int opcion) {
 		switch(opcion) {
 			case 1:
@@ -780,7 +1018,11 @@ public class KnnTfg  {
 				break;
 		}
 	}
-	
+
+	/**
+	 * @brief Menú para información de atributos cualitativos
+	 * @param data Dataset a analizar
+	 */
 	public static void infoCualitativo(Dataset data) {
 		logger.info("               [1] Mostrar nombre ");
 		logger.info("               [2] Mostrar número de clases ");
@@ -848,7 +1090,12 @@ public class KnnTfg  {
 			break;
 		}
 	}
-	
+
+	/**
+	 * @brief Realiza experimentos de clasificación con el dataset
+	 * @param datos Dataset a utilizar
+	 * @throws IOException Si hay errores al guardar resultados
+	 */
 	public static void experimentar(Dataset datos) throws IOException {
 		if (datos.numeroCasos() == 0) {
 			logger.error("No se puede realizar experimentación: el dataset está vacío");
@@ -906,7 +1153,12 @@ public class KnnTfg  {
 			}
 		}
 	}
-	
+
+	/**
+	 * @brief Realiza experimentación con división aleatoria del dataset
+	 * @param datos Dataset completo
+	 * @return Objeto Entrenamiento con resultados
+	 */
 	public static Entrenamiento experimentacionAleatoria(Dataset datos) {
 		logger.info("               [1] Semilla(Seed) por defecto");
 		logger.info("               [2] Semilla(Seed) manual");
